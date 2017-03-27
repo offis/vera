@@ -1,0 +1,7 @@
+exports.config = {
+	couchdb : {
+		user: "myuser",
+		password: "mypasswd"
+	},
+	fileroot: undefined	
+};

@@ -1,0 +1,14 @@
+RewriteEngine on
+RewriteBase /
+RewriteRule ^_all_dbs http://localhost:5984/_all_dbs [P]
+RewriteRule ^_active_tasks http://localhost:5984/_active_tasks [P]
+RewriteRule ^_config/(.*) http://localhost:5984/_config/$1 [P]
+RewriteRule ^_replicator/(.*) http://localhost:5984/_replicator/$1 [P]
+RewriteRule ^_replicate(.*) http://localhost:5984/_replicate$1 [P]
+RewriteRule ^_session http://localhost:5984/_session [P]
+RewriteRule ^_utils/(.*) http://localhost:5984/_utils/$1 [P]
+RewriteRule ^_users/(.*) http://localhost:5984/_users/$1 [P]
+RewriteRule ^_uuids(.*) http://localhost:5984/_uuids$1 [P]
+RewriteRule ^api(.*) http://localhost:8080/api$1 [P]
+RewriteRule ^vera(.*) http://localhost:5984/vera$1 [P]
+RewriteRule ^feed(.*) http://localhost:8080/feed$1 [P]
