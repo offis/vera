@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <!-- //<meta name="viewport" content="width=device-width, initial-scale=1">//-->
+
+        <link rel="stylesheet" href="../css/vera.css" />
+        <style>
+        	body {
+        		text-align: justify;
+        	}
+            .image {
+                height: 480px;
+                width: 640px;
+                margin: 1em;
+            }
+            #content {
+            	margin: 0em;
+            	width: 90%;
+            }
+        </style>
+
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/mustache.js"></script>
+        <script src="../js/purl.js"></script>
+
+        <script type="application/javascript">
+            $(document).ready(function () {
+                var templ = $("#template").html();
+                var resid = purl().param("res-id");
+
+                function stripURL(dataurl) {
+                    var sstr;
+                	var mstr = dataurl.match(/\".*\"/);
+                    if (mstr !== null) { /* Format: url("data:...") */
+                	   sstr = mstr[0].substr(1, mstr[0].length - 2);
+                    } else { /* Format: url(data:..) */
+                        mstr = dataurl.match(/\(.*\)/);
+                        sstr = mstr[0].substr(1, mstr[0].length - 2);
+                    }
+                	return sstr;
+                }
+
+                $.getJSON("/api/1/residence/" + resid + "/about-small", function (data) {
+                    $("#content").html(Mustache.render(templ, data));
+                    $("#template").empty();
+                });
+
+                $.getJSON("/api/1/residence/" + resid + "/about", function (data) {
+                    var img0 = document.getElementById("image-0");
+                    var img1 = document.getElementById("image-1");
+                    var img2 = document.getElementById("image-2");
+                    var cimg = document.getElementById("contact-image");
+                    /*img0.style.background = data["image-0"];
+                    img1.style.background = data["image-1"];
+                    img2.style.background = data["image-2"];*/
+                    cimg.style.background = data["contact-image"];
+                    $(img0).attr("src", stripURL(data["image-0"]));
+                    $(img1).attr("src", stripURL(data["image-1"]));
+                    $(img2).attr("src", stripURL(data["image-2"]));
+
+                    //$(img0).css("background-size", "cover");
+                    //$(img1).css("background-size", "cover");
+                    //$(img2).css("background-size", "cover");
+                    $(cimg).css("background-size", "cover");
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div id="template" style="display: none">
+            <h1>Mein Haus</h1>
+            <h2>{{{title}}}</h2>
+            <p>{{{desc}}}</p>
+            <div style="width: 80%; padding: 5px">
+                <img class="image" id="image-0" src="../img/loading.gif"></img>
+                <img class="image" id="image-1" src="../img/loading.gif"></img>
+                <img class="image" id="image-2" src="../img/loading.gif"></img>
+                <figcaption></figcaption>
+            </div>
+            <table style="border: 2px solid black; padding: 1em">
+                <tr>
+                    <td><p style="font-size: 14pt">{{{contact-text}}}</p></td>
+                    <td><div style="width: 1em"></div></td>
+                    <td>         
+                        <div id="contact-image" style="height: 6em; width: 4em"></div>
+                    </td>
+                </tr>
+            </table>
+            
+        </div>
+        <div id="content">
+        </div>
+    </body>
+</html>

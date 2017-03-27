@@ -1,0 +1,93 @@
+<html>
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <!--<meta name="viewport" content="width=device-width, initial-scale=1">//-->
+
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/fullcalendar.min.css" />
+        <link rel="stylesheet" href="../css/vera.css" />
+
+
+        <script src="../js/moment-with-locales.min.js"></script>
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/URI.min.js"></script>
+        <script src="../js/jquery.couch.js"></script>                <!--// for CouchDB access via convenience functions //-->  
+        <script src="../js/vera.js"></script>                        <!--// Vera client logic //-->
+        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/fullcalendar.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/lang-all.js"></script>
+
+        <title>VERA</title>
+        
+<script type="text/javascript">
+$(document).ready(function() {
+    moment.locale("de");
+    
+    var q = URI.parseQuery(URI.parse(location.href).query);  
+    $.vera.user = q.user;
+    
+    var uri = "/vera_user_" + q.user + "/" + q.event;
+    $.get(uri, function (data) {
+        var event = JSON.parse(data);
+        
+        $("#event-title").text(event.title);
+        $("#event-location").text(event.location);
+        $("#event-desc").text(event.description);
+        $("#event-start").text(moment(event.start).format("LLLL"));
+        $("#event-end").text(moment(event.end).format("LLLL"));
+        $("#event-contact").text(event.contact);
+        $("#calendar-entry-delete-button").attr("data-rev", event._rev);
+    });
+    
+    $("#back-button").attr("data-referrer", q.referrer);
+    $("#back-button").click(function () {
+        location.href = $(this).attr("data-referrer");
+    });
+    
+    $("#calendar-entry-delete-button").attr("data-id", q.event);
+    $("#calendar-entry-delete-button").click(function () {
+        var _id  = $(this).attr("data-id");
+        var _rev = $(this).attr("data-rev");
+        
+        $.vera.deleteUserEvent({"_id":_id, "_rev":_rev}, {
+            success: function () {
+                alert("Der Kalendereintrag wurde entfernt!");
+                location.href = $("#back-button").attr("data-referrer");
+            },
+            error: function () {
+                alert("Beim Entfernen ist etwas schief gelaufen!");
+            }
+        });
+    });
+});
+</script>
+</head>
+<body>
+    <div>
+        <div>
+            <h2 id="event-title">{{title}}</h2>
+            <p><b>Ort:</b><span id="event-location">(kein Ort angegeben)</span></p>
+            <b>Beschreibung:</b>
+            <div style="border: 2px solid black; border-radius: 10px; margin-bottom: 1em; padding: 0.2em; width: 95%">
+                <p id="event-desc">(keine detaillierte Beschreibung)</p>
+            </div>
+            <table style="border: 0px; font-size: 15pt">
+                <tr>
+                    <td><b>Beginn:</b></td> <td id="event-start">{{start}}</td>
+                </tr>
+                <tr>
+                    <td><b>Ende:</b></td> <td id="event-end">{{end}}</td>
+                </tr>
+                <tr>
+                    <td><b>Ansprechpartner:</b></td><td id="event-contact">(kein Ansprechpartner angegeben)</td>
+                </tr>
+            </table>
+        </div>
+        <div style="display: table; border-collapse: separate; border-spacing: 15px; margin-top: 2em; width: 99%; text-align: center">
+            <div class="content-button" style="display: table-cell; min-width: 250px" id="back-button">Zurück</div>
+            <div class="content-button" style="display: table-cell; min-width: 250px" id="calendar-entry-delete-button">Eintrag löschen</div>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

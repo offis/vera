@@ -1,0 +1,176 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script src="../js/wysiwyg.js"></script>
+        <script src="../js/purl.js"></script>
+        <style>
+        body {
+            font-size: 14pt;
+            margin-top: 50px;
+        }
+        #image_placeholder {
+            border: 1px solid black;
+            width: 500px;
+            height: 375px;
+        }
+        #edit-title {
+            font-size: 50pt;
+            border: 1px dotted gray;
+        }
+        .description {
+            border: 1px dotted gray;
+            font-size: 20pt;
+            overflow: hidden;
+        }
+        #tablet {
+            border: 5px solid black;
+            width: 1200px;
+            height: 725px;
+        }
+        #notification {
+            font-color: orange;
+        }
+        </style>
+    </head>
+    <body>
+        <p>
+        <button onClick="saveDoc()">Speichern</button>
+        <span id="notification"></span>
+        <p>
+            <input type="checkbox" id="published" /> Veröffentlicht?
+        </p>
+    </p>
+    <div id="tablet">
+        <div id="edit-title">
+            <span>Titel des Angebots</span>
+        </div>
+        <div id="edit-subtitle">
+            <span>Untertitel des Angebots</span>
+        </div>
+        <table>
+            <tr>
+                <td style="width: 500px; height: 375px; vertical-align: top">
+                    <div id="edit-desc-1" class="description">
+                    <span>Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                    </span>
+                    </div>
+                </td>
+                <td style="width: 500px; height: 375px; vertical-align: top">
+                <div id="image_placeholder">
+                    <input type="file" accept="image/*" onchange="previewFile()" />
+                </div>
+                </td>
+                </tr>
+            <tr>
+                <td colspan="2"><table style="width: 100%; table-layout: fixed">
+                    <td>
+                        <div id="edit-desc-2" class="description" style="width: 100%; height: 230px"><span></span></div>
+                    </td>
+                    <td>
+                        <div id="edit-desc-3" class="description" style="width: 100%; height: 230px"><span></span></div>
+                    </td>
+                    <td>
+                        <div id="edit-desc-4" class="description" style="width: 100%; height: 230px"><span></span></div>
+                    </td>
+                </table></td>
+            </tr>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+        var title = new wysiwyg("edit-title");
+        var subtitle = new wysiwyg("edit-subtitle");
+        var desc1 = new wysiwyg("edit-desc-1");
+        var desc2 = new wysiwyg("edit-desc-2");
+        var desc3 = new wysiwyg("edit-desc-3");
+        var desc4 = new wysiwyg("edit-desc-4");
+
+        $(".description").css("border", "1px dotted gray");
+        $("#edit-title").css("border", "1px dotted gray");
+
+        var url = $.url();
+        var id  = url.param("id");
+        var rid = url.param("rid");
+        var db = "vera_residence_" + rid;
+        var rev = undefined;
+
+        function loadDoc() {
+            $.couch.db(db).openDoc(id, {
+                success: function(doc) {
+                    rev = doc._rev;
+
+                    if (doc.title.indexOf("<span>") === 0) {
+                        $("#edit-title").html($(doc.title));
+                    } else {
+                        $("#edit-title").html($("<span>" + doc.title + "</span>"));
+                    }
+
+                    for (var i = 1; i <= 4; i++) {
+                        if(doc["desc-" + i] !== undefined) {
+                            $("#edit-desc-" + i).html($(doc["desc-" + i]));
+                        }
+                    }
+
+                    if(doc["img-0"] !== undefined) {
+                        var preview = document.getElementById('image_placeholder');
+                        preview.style.background =  doc["img-0"];
+                        $("#image_placeholder").css("background-size", "500px 375px");
+                    }
+
+                    if (doc["is-published"] !== undefined && (doc["is-published"] === "on" || doc["is-published"] == true)) {
+                        $("#published").prop("checked", true);
+                    }
+                },
+                error: function(err) {
+                    alert("Beim Laden ist ein Fehler aufgetreten: " + err);
+                }
+            });
+        }
+
+        function saveDoc() {
+            var doc = {
+                "_id" : id,
+                "_rev" : rev,
+                "title" : title.html(),
+                "desc-1" : desc1.html(),
+                "desc-2" : desc2.html(),
+                "desc-3" : desc3.html(),
+                "desc-4" : desc4.html(),
+                "img-0" : $("#image_placeholder").css("background-image"),
+                "is-published" : $("#published").prop("checked")
+            };
+            $.couch.db(db).saveDoc(doc, {
+                success: function(doc) {
+                    rev = doc.rev;
+                    $("#notification").text("Gespeichert!");
+                },
+                error: function(err) {
+                    alert("Beim Speichern ist ein Fehler aufgetreten: " + err);
+                    $("#notification").text("");
+                }
+            });
+        }
+
+        function previewFile() {
+          var preview = document.getElementById('image_placeholder');
+          var file    = document.querySelector('input[type=file]').files[0];
+          var reader  = new FileReader();
+
+          reader.onloadend = function () {
+            preview.style.background = "url('" + reader.result + "')";
+          }
+
+          if (file) {
+            reader.readAsDataURL(file);
+          } else {
+            preview.style.background = "";
+          }
+        }
+
+        loadDoc();
+    </script>
+    </body>
+</html>

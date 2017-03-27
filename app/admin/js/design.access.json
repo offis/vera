@@ -1,0 +1,56 @@
+{
+    "_id": "_design/access",
+    "language": "javascript",
+    "version": 30,
+    "views": {
+        "by-date": {
+            "map": "function(doc) { if(doc.date) { emit(Date.parse(doc.date), doc); } }"
+        },
+        "by-doctype": {
+            "map": "function(doc){var type=doc._id.substr(0,doc._id.indexOf(':'));if(type!==undefined){emit(doc._id,doc)}}"
+        },
+        "calendar-by-startdate": {
+            "map": "function(doc) { var type = doc._id.substr(0, doc._id.indexOf(':')); if(type == 'de.bremer-heimstiftung.vera.event.fullcalendar') {  emit(doc.start, doc)} }"
+        },
+        "calendar-by-houseoffer": {
+            "map": "function(doc) { var type = doc._id.substr(0, doc._id.indexOf(':')); if(type == 'de.bremer-heimstiftung.vera.event.fullcalendar') {  emit(doc['house-offer-id'], doc)} }"
+        },
+        "activity-starttime": {
+            "map": "function(doc) { if (doc.activity !== undefined && doc.activity.date !== undefined && doc.activity.date.start !== undefined) { emit([doc.activity.category, doc.activity.date.start], doc)}}"
+        },
+        "activity": {
+            "map": "function(doc) {\n    var type = doc._id.substr(0, doc._id.indexOf(':'));\n    if(type === \"de.bremer-heimstiftung.vera.activity\") {\n        emit(parseInt(doc.activity.date.start), doc);\n    }\n}"
+        },
+        "menus": {
+            "map": "function (doc) { var doctype = 'de.bremer-heimstiftung.vera.menu:'; if(doc._id.substr(0, doctype.length) == doctype) { emit(parseInt(doc._id.substr(doctype.length)), doc); }}"
+        },
+        "movies": {
+            "map": "function(doc){if(doc.type&&doc.prio&&doc.type=='de.bremer-heimstiftung.vera.movie'){emit([doc.type,doc.prio],doc)}}"
+        },
+        "my-texts": {
+            "map": "function (doc) {\n    var doctype = 'de.bremer-heimstiftung.vera.texts.entry:'; \n  if(doc._id.substr(0, doctype.length) == doctype) { \n        emit(doc.start, doc);\n    }\n }\n"
+        },
+        "news-feed": {
+            "map": "function (doc) {\n var doctype = 'de.bremer-heimstiftung.vera.newsfeed.entry:';\n if(doc._id.substr(0, doctype.length) == doctype) {\n emit(doc.title, doc);\n }\n }\n"
+        },
+        "notes": {
+            "map": "function (doc) {\n var doctype = 'de.bremer-heimstiftung.vera.notes.entry:';\n if(doc._id.substr(0, doctype.length) == doctype) {\n emit(doc.title, doc);\n }\n }\n"
+        },
+        "offer-env": {
+            "map": "function(doc){var doctype='de.bremer-heimstiftung.vera.envoffer:';if(doc._id.substr(0,doctype.length)==doctype){var key=doc.title.replace(new RegExp('<(?:.)*?>','gm'),'');emit(key,{'_id':doc._id,'_rev':doc._rev,'title':doc.title})}}"
+        },
+        "offer-house": {
+            "map": "function(doc){var doctype='de.bremer-heimstiftung.vera.houseoffer:';if(doc._id.substr(0,doctype.length)==doctype){var key=doc.title.replace(new RegExp('<(?:.)*?>','gm'),'');emit(key,{'_id':doc._id,'_rev':doc._rev,'title':doc.title})}}"
+        },
+        "offer-house-published": {
+            "map": "function(doc){var doctype='de.bremer-heimstiftung.vera.houseoffer:';if(doc._id.substr(0,doctype.length)==doctype&&(doc['is-published']==='on'||doc['is-published']==true)){var key=doc.title.replace(new RegExp('<(?:.)*?>','gm'),'');emit(key,{'_id':doc._id,'_rev':doc._rev,'title':doc.title})}}"
+        },
+        "offer-env-published": {
+            "map": "function(doc){var doctype='de.bremer-heimstiftung.vera.envoffer:';if((doc._id.substr(0,doctype.length)==doctype)&&(doc['is-published']==='on'||doc['is-published']==true)){var key=doc.title.replace(new RegExp('<(?:.)*?>','gm'),'');emit(key,{'_id':doc._id,'_rev':doc._rev,'title':doc.title})}}"
+        }
+    },
+    "lists": {
+        "calendar-entries": "function(head,req){Date.prototype.stdTimezoneOffset=function(){var jan=new Date(this.getFullYear(),0,1);var jul=new Date(this.getFullYear(),6,1);return Math.max(jan.getTimezoneOffset(),jul.getTimezoneOffset())};Date.prototype.dst=function(){return this.getTimezoneOffset()<this.stdTimezoneOffset()};var ms_oneday=24*60*60*1000;var start=new Date(req.query.start);var end=new Date(req.query.end);var first=true;if(req.query.startTS!==undefined){start=new Date(parseInt(req.query.startTS,10)*1000);end=new Date(parseInt(req.query.endTS,10)*1000)}var checkFirst=function(){if(first){first=false}else{send(',')}};var sendEvent=function(event){checkFirst();send(toJSON(event))};var shiftDate=function(datestr,shift,origStart,withDst){var date=new Date(datestr);var orig=new Date(origStart);if(date.dst()&&!orig.dst()&&withDst){shift=shift-60*60*1000}else if(!date.dst()&&orig.dst()&&withDst){shift=shift+60*60*1000}return new Date(date.getTime()+shift).toISOString()};var shiftEvent=function(event,shift,withDst){event.start=shiftDate(event.start,shift,event.origStart,withDst);event.end=shiftDate(event.end,shift,event.origStart,withDst)};var loopEvent=function(event,shift){var tmpStart,tmpEnd;while(end.getTime()>new Date(event.start).getTime()){tmpStart=event.start;tmpEnd=event.end;shiftEvent(event,shift,true);if(start.getTime()<=new Date(event.start).getTime()&&end.getTime()>=new Date(event.end).getTime()){sendEvent(event)}event.start=tmpStart;event.end=tmpEnd;shiftEvent(event,shift,false)}};var dayOfMonth=function(date){var first=date.getDate()%7;var occ=1;while(first!=date.getDate()){occ++;first+=7}return occ};var loopMonthlyEvent=function(event){var month,dom=dayOfMonth(new Date(event.start));while(end.getTime()>new Date(event.start).getTime()){event.dom=dom;sendEvent(event);month=new Date(event.start).getMonth();while(new Date(event.start).getMonth()==month){shiftEvent(event,7*ms_oneday)}if(dom<=3){shiftEvent(event,(dom-1)*7*ms_oneday)}else{month=new Date(event.start).getMonth();shiftEvent(event,7*ms_oneday);while(new Date(event.start).getMonth()==month){shiftEvent(event,7*ms_oneday)}shiftEvent(event,-7*ms_oneday)}}};send('[');while(row=getRow()){var event=row.value;event.origStart=event.start;if((event.start===''&&event.end==='')||(event.start===undefined&&event.end===undefined)){log('calendar-entries: skip event._id = '+event._id);continue}if(event.end===undefined||event.end===''){event.end=new Date(new Date(event.start).getTime()+60*60*1000).toISOString()}if(start.getTime()<=new Date(event.start).getTime()&&end.getTime()>=new Date(event.end).getTime()&&(event.recurrence=='0'||event.recurrence===undefined)){sendEvent(event)}else if(event.recurrence=='1'){loopEvent(event,ms_oneday)}else if(event.recurrence=='7'){loopEvent(event,7*ms_oneday)}else if(event.recurrence=='14'){loopEvent(event,14*ms_oneday)}else if(event.recurrence=='21'){loopEvent(event,21*ms_oneday)}else if(event.recurrence=='28'){loopEvent(event,28*ms_oneday)}else if(event.recurrence=='1M'){loopMonthlyEvent(event)}}return']'}",
+        "published": "function(head,req){var today=new Date().toISOString().substr(0,10),row,first=true;send('[');while(row=getRow()){if(row.value.date.substr(0,10)<=today){if(first){first=false}else{send(',')}send(toJSON(row.value))}}return']'}"
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "_id": "_design/report",
+    "language": "javascript",
+    "version": 7,
+    "views": {
+        "activities-per-month": {
+            "map": "function(doc){var type=doc._id.substr(0,doc._id.indexOf(':'));if(type==='de.bremer-heimstiftung.vera.activity'){var date=new Date(parseInt(doc.activity.date.start,10));emit([1900+date.getYear(),date.getMonth()+1],doc)}}"
+        },
+        "clicks-per-hour": {
+            "map": "function(doc){var doctype='de.bremer-heimstiftung.vera.log:';if(doc._id.substr(0,doctype.length)==doctype&&doc.type==='click'){var date;if(doc.date===undefined){date=new Date(doc.timeStamp)}else{date=new Date(doc.date)}emit(date.getHours(),doc._id)}}"
+        },
+        "clicks-per-page": {
+            "map": "function(doc){var doctype='de.bremer-heimstiftung.vera.log:';if(doc._id.substr(0,doctype.length)==doctype&&doc.type==='click'&&doc.pageUrl!==undefined){emit(doc.pageUrl,null)}}"
+        }
+    },
+    "lists": {
+        "sum-up-keys": "function(head,req){var row;var cnt={};while(row=getRow()){if(cnt[row.key]===undefined){cnt[row.key]=1}else{cnt[row.key]+=1}}send(JSON.stringify(cnt))}",
+        "sum-up-pages": "function(head,req){var row;var cnt={'mypage':0,'myhouse':0,'myhealth':0,'mycalendar':0,'internet':0,'news':0,'page_myhealth_neuronation':0,'page_myhealth_movies':0};while(row=getRow()){if(row.key.indexOf('#mypage')!==-1){cnt.mypage++}else if(row.key.indexOf('#myhouse')!==-1){cnt.myhouse++}else if(row.key.indexOf('#myhealth')!==-1){cnt.myhealth++}else if(row.key.indexOf('#mycalendar')!==-1){cnt.mycalendar++}else if(row.key.indexOf('#internet')!==-1){cnt.internet++}else if(row.key.indexOf('#news')!==-1){cnt.news++}if(row.key.indexOf('#myhealth-page_myhealth_neuronation')!==-1){cnt.page_myhealth_neuronation++}else if(row.key.indexOf('#myhealth-page_myhealth_movies')!==-1){cnt.page_myhealth_movies++}}send(JSON.stringify(cnt))}"
+    }
+}

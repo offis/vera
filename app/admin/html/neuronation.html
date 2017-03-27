@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>VERA NEURONATION</title>
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script>
+            $(document).ready(function() {
+
+                // Count number of users
+                $.couch.allDbs({
+                    success: function(dbs) {
+                        var n;
+                        for(n = 0; n < dbs.length; n++) {
+                            if (dbs[n].indexOf("_user_") !== -1) {
+
+                                $.couch.db(dbs[n]).openDoc("neuronation", {
+                                    success: function(user) {
+                                      return function(doc) {
+                                        tr = $("<tr></tr>");
+                                        tr.append("<td>" + user + "</td>");
+                                        tr.append("<td>" + doc.neuronation.uid + "</td>");
+                                        tr.append("<td>" + doc.neuronation.password + "</td>");
+                                        $("#nn_data").append(tr);
+                                      };
+                                    }(dbs[n]),
+                                    error: function (err) {
+                                        console.log(err);
+                                    }
+                                });
+                            }
+                        }
+
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                });
+
+            });
+        </script>
+
+        <style type="text/css">
+            table {
+                border: 1px solid black;
+            }
+
+            thead {
+                background-color: #eeeeee;
+            }
+
+            tr, td {
+                border: 1px dotted black;
+            }
+
+            td.hour_10, td.hour_11 {
+                background-color: #FF8888;
+            },
+            #tbl-click_p_hour_1, #tbl-click_p_hour_2 {
+                background-color: : #AAFFAA;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>VERA NEURONATION</h1>
+        <table>
+          <thead>
+            <tr><td>Vera User (vera_user_[username])</td><td>Neuronation User</td><td>Passwort</td></tr>
+          </thead>
+        <tbody id="nn_data">
+        </tbody>
+      </table>
+    </body>
+</html>

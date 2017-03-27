@@ -1,0 +1,8 @@
+{
+    "activity": {
+        "name": "Geistige Aktivität",
+        "description": "<p>Dokumentieren Sie hier die Wochentage, an denen Sie an Aktivitäten teilgenommen haben, die Sie geistig gefordert haben.</p>",
+        "motivation": "Beispiele: Sprach, -Computer-, Musikkurs, Literaturkreis …",
+        "category": "geist"
+    }
+}

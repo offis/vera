@@ -1,0 +1,89 @@
+body {
+	font-family: Verdana,Arial,sans-serif;
+	padding: 10px;
+}
+
+h1 {
+	text-align: left;
+}
+
+.env-offer {
+	border: 2px dotted black;
+	padding: 10px;
+	margin: 10px;
+}
+
+.form-group {
+	margin-top: 1em;
+	padding: 10px;
+	border: 5px solid #a0a0a0;
+}
+
+.house-offer {
+	border: 2px dotted black;
+	padding: 10px;
+	margin: 10px;
+}
+
+.inline-editor {
+	border: 3px dotted gray;
+	margin: 1em;
+	padding: 1em;
+}
+
+.myhouse-image {
+	background-size: 600px auto;
+	border: 3px dotted gray;
+	height: 400px;
+	margin: 1em;
+	width: 600px;
+}
+
+.padding-right-normal {
+	padding-right: 1em;
+}
+
+.padding-left-normal {
+	padding-left: 1em;
+}
+
+.table {
+	display: table;
+}
+
+.table-row {
+	display: table-row;
+}
+
+.table-cell {
+	display: table-cell;
+}
+
+#calendar {
+	margin-top: 50px;
+}
+
+#toolbar {
+	padding: 4px;
+	display: inline-block;
+	margin-bottom: 10px;
+}
+
+#myhouse-contact {
+	width: 300px;
+}
+
+#myhouse-contact-image {
+	background-size: contain;
+	background-repeat: no-repeat;
+	height: 150px;
+	width: 100px;
+}
+
+#new-calendar-entry-button {
+	margin-left: 100px;
+}
+
+#feed-entry-list {
+	list-style: none;
+}

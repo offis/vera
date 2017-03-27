@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Vera Mitarbeiter Anwendung</title>
+        <link rel="icon" href="../img/bhslogo.png">
+
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.css" />
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.print.css" />
+        <link rel="stylesheet" href="../css/vera.css" />
+        <link href="//fonts.googleapis.com/css?family=Titillium+Web:400,400italic,700&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+        <script data-main="../js/index" src="../js/require.js"></script>
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/ufeed.js"></script>
+    </head>
+    <body style="background-image: url(../img/dark-grey-tile.png); background-repeat: repeat">
+        
+            <table style="width: 100%; height: 100px; border: 0px; margin: 0px; margin-bottom: 1em; background-color: white; border-radius: 10px">
+                <tr>
+                    <td>
+                        <img src="../img/Bremer_Heimstiftung_Logo_2011.svg" style="height: 60px; float: left; margin: 10px" />
+                    </td>
+                    <td>
+                        <h1 id="title-h1">Vera für Mitarbeiter</h1>
+                        Eingeloggt als <span id="login"></span> für <span id="residence"></span>
+                    </td>
+                </tr>
+            </table>
+        
+
+        <div id="tabs" style="background-color: white; border-radius: 10px; max-height: 90%; height: 80%">
+            <ul>
+                <li><a href="#calendar-tab">Kalender</a></li>
+                <li><a href="#myhouse-tab">Mein Haus</a></li>
+                <li><a href="#myhouse-paper-tab">Hauszeitung</a></li>
+                <li><a href="#feed-tab">Aktuelles aus dem Haus</a></li>
+                <li><a href="#diet-tab">Speiseplan</a></li>
+                <li><a href="#help-tab">Tipps &amp; Hilfe</a></li>
+                <li><a href="#house-offer-tab">Angebote im Haus</a></li>
+                <li><a href="#env-offer-tab">Angebote in der Umgebung</a></li>
+            </ul>
+
+            <div id="calendar-tab">
+                Ansicht:
+                <button class="calendar-view-button" data-view="agendaDay">Tag</button>
+                <button class="calendar-view-button" data-view="agendaWeek">Woche</button>
+                <button class="calendar-view-button" data-view="month">Monat</button>
+
+                <div id="calendar"></div>
+            </div>
+
+            <div id="myhouse-tab">
+                <h2>Mein Haus</h2>
+
+                <div class="inline-editor" id="myhouse-title">
+                	Der Titel der Mein Haus Seite
+                </div>
+                <div class="inline-editor" id="myhouse-desc">
+                	Hier kommt eine aussagekräftige Beschreibung von Mein Haus.
+                </div>
+                <div class="myhouse-image" id="myhouse-image-0">
+                	<input class="myhouse-image-file" id="myhouse-image-0-file" type="file" accept="image/*" data-num="0" />
+                </div>
+                <div class="myhouse-image" id="myhouse-image-1">
+                	<input class="myhouse-image-file" id="myhouse-image-1-file" type="file" accept="image/*" data-num="1"/>
+                </div>
+                <div class="myhouse-image" id="myhouse-image-2">
+                	<input class="myhouse-image-file" id="myhouse-image-2-file" type="file" accept="image/*" data-num="2" />
+                </div>
+
+                <div class="table">
+                    <div class="table-row">
+                        <div class="table-cell inline-editor" id="myhouse-contact">
+                        </div>
+                        <input id="myhouse-contact-image-file" type="file" accept="image/*" />
+                        <div class="table-cell" id="myhouse-contact-image">
+                        </div>
+                    </div>
+                </div>
+
+                <button id="myhouse-save-button">Speichern</button>
+
+                <p>
+                Hinweis: Nach dem Drücken auf den Speichern-Button sind die Änderungen sofort
+                in der VERA-Anwendung auf dem Tablet sichtbar.
+                </p>
+            </div>
+
+            <div id="myhouse-paper-tab">
+                <h2>Hauszeitung</h2>
+
+                <table>
+                    <tr>
+                        <td style="border-right: 1px solid gray; width: 50%" valign="top" class="padding-right-normal">
+                            <p>
+            					Name der Hauszeitung: 
+                                <input type="text" name="housepaper-name" id="housepaper-name" value="Die Hauszeitung" />
+            					<button id="set-housepaper-name-button">Name setzen</button>
+                            </p>
+
+                            <p>
+                            Hier kann die Hauszeitung als PDF hochgeladen werden:
+                            </p>
+                            <form class="documentForm" method="POST" action="" enctype="multipart/form-data">
+                                <input type="text" name="_id" value="de.bremer-heimstiftung.vera.housepaper" style="width: 1px; height: 1px; border: 0px"/>
+                                <input type="text" name="_rev" value="" style="width: 1px; height: 1px; border: 0px"/>
+                                <input type="file" name="_attachments" id="_attachments" multiple="multiple" accept="application/pdf"/>
+                                <p>
+                                    <input type="submit" class="Submit" value="Upload" />
+                                </p>
+                            </form>
+
+                            <p>Sofern ein PDF hochgeladen wurde, kann es <a href="" id="housepaper-pdf-link">hier</a> oder in der Vorschau rechts betrachtet werden.</p>
+                        </td>
+                        <td class="padding-left-normal" style="min-height: 600px">
+                            <iframe style="width: 100%; height: 90%" id="housepaper-pdf-view" src="">
+                            </iframe>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="feed-tab">
+                <h2>Aktuelles aus dem Haus</h2>
+                <p>
+                Hier können Neuigkeiten und Wissenswertes rund um das Haus eingestellt werden.
+                Die Artikel sind dann auf den Tablets dieses Hauses sichtbar.
+                </p>
+                <table>
+                    <tr>
+                        <td style="border-right: 1px solid gray;" class="padding-right-normal">
+
+                            <h3>Neuer Eintrag / Eintrag bearbeiten</h3>
+
+                            <form class="form-horizontal" role="form" id="news-post-form">
+                                <input type="hidden" id="news-public-token" value="" />
+                                <input type="hidden" id="news-admin-token" value="" />
+                                <input type="hidden" id="news-_rev" value="" />
+                                <input type="hidden" id="news-_id" value="" />
+                                <div class="form-group">
+                                    <label for="news-entry-title">Titel</label>
+                                    <input type="text" id="news-entry-title" placeholder="Titel" style="width: 300px"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="news-entry-text">Text (max. 300 Zeichen)</label>
+                                    <!--<div id="news-entry-text" style="width: 100%; height: 200px"></div>-->
+                                    <textarea id="news-entry-text" maxlength="300" style="width: 100%; height: 200px">
+                                    </textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="news-entry-file">PDF-Dokument</label><br/>
+                                    <div id="news-form-file-hint"></div>
+                                    <br/>
+                                    <input type="file" class="form-control" id="news-entry-file" placeholder="PDF-Dokument" style="height: auto" accept="application/pdf" />
+                                </div>
+                                <!--
+                                <div class="form-group">
+                                    <label for="news-entry-image">Bild (quadratisch, z. B. 64x64 Pixel)</label><br/>
+                                    <input type="file" class="form-control" id="news-entry-image" placeholder="Bild" style="height: auto" accept="image/jpeg, image/png, image/gif" />
+                                </div>
+                                //--> 
+                                <div class="form-group">
+                                    <label for="news-entry-date">Veröffentlichungsdatum:</label>
+                                    <input type="datetime" class="form-control" id="news-entry-date"  style="width: 300px"/>
+                                </div>
+                            </form>
+                            <div class="form-group" style="margin-top: 1em">
+                                <button id="news-form-submit-button">Neu erstellen</button>
+                                <button id="news-form-edit-button">Aktualisieren</button>
+                                <button id="news-form-cancel-button">Abbrechen</button>
+                            </div>
+                        </td>
+                        <td valign="top" class="padding-left-normal">
+                            <h3>Vorhandene Einträge</h3>
+                            <div>
+                                <ul id="news-insertpoint">
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="diet-tab">
+                <h2>Speiseplan hochladen</h2>
+                Speiseplan auswählen:
+                <br />
+                <form class="documentForm" method="post" action="" enctype="multipart/form-data">
+                <input type="text" name="_id" id="_id" placeholder="Document ID" value="de.bremer-heimstiftung.vera.menu" readonly="readonly" style="width: 1px; height: 1px; border: 0px"/>
+                <input type="text" name="_rev" id="_rev" placeholder="Revision ID (always overridden in code)" readonly="readonly" style="width: 1px; height: 1px; border: 0px"/>
+                <br />
+                Kalenderwoche KW <input id="menu-week" style="width: 40px" />
+                <input type="file" name="_attachments" id="_attachments" multiple="multiple" accept="application/pdf"/>
+                <p>
+                    <input type="submit" class="Submit" value="Aktualisieren" />
+                </p>
+                </form>
+                <div>
+                    <h3>Vorhandene Speisepläne</h3>
+                    <ul id="menues">
+                    </ul>
+                </div>
+            </div>
+
+            <div id="help-tab">
+                <h2>Tipps &amp; Hilfe</h2>
+                <p>
+                Hier kann das Tipps &amp; Hilfe PDF hochgeladen werden.
+                </p>
+                <form class="documentForm" method="POST" action="" enctype="multipart/form-data">
+                    <input type="text" name="_id" value="de.bremer-heimstiftung.vera.help" style="width: 1px; height: 1px; border: 0px"/>
+                    <input type="text" name="_rev" value="" style="width: 1px; height: 1px; border: 0px"/>
+                    <input type="file" name="_attachments" id="_attachments" multiple="multiple" accept="application/pdf"/>
+                    <p>
+                        <input type="submit" class="Submit" value="Upload" />
+                    </p>
+                </form>
+
+                <p>Sofern ein PDF hochgeladen wurde, kann es <a href="" id="help-pdf-link">hier betrachtet</a> werden.</p>
+            </div>
+
+            <div id="house-offer-tab">
+                <h2>Angebote im Haus</h2>
+
+                <button id="new-house-offer-button">Neues Angebot</button>
+                <div id="new-house-offer-status"></div>
+
+                <div id="house-offers">
+                </div>
+            </div>
+
+            <div id="env-offer-tab">
+                <h2>Angebote in der Umgebung</h2>
+
+                <button id="new-env-offer-button">Neues Angebot</button>
+                <div id="new-env-offer-status"></div>
+
+                <div id="env-offers">
+             
+                </div>
+            </div>
+        </div>
+        
+        <div id="feed-entry-dialog" title="Eintrag Aktuelles">
+            <h1 id="feed-entry-dialog-title" name="feed-entry-dialog-title">Titel</h1>
+            <h3 id="feed-entry-dialog-time" name="feed-entry-dialog-time">Zeit</h3>
+            <div id="feed-entry-dialog-content" name="feed-entry-dialog-content">Inhalt</div>
+        </div>
+    </body>
+</html>

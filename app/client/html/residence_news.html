@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <!-- //<meta name="viewport" content="width=device-width, initial-scale=1">//-->
+
+        <link rel="stylesheet" href="../css/vera.css" />
+        <style>
+        	body {
+        		text-align: justify;
+        	}
+            h2 {
+                margin-bottom: 2pt;
+                margin-top: 0px;
+            }
+            .news-text {
+                margin-top: 1em;
+            }
+            .news-entry {
+                border: 4px dotted gray;
+                margin: 0.7em;
+                margin-left: 0em;
+                padding: 0.7em;
+            }
+        </style>
+
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/mustache.js"></script>
+        <script src="../js/purl.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script src="../js/vera.js"></script>
+
+        <script type="application/javascript">
+"use strict";
+/*jslint browser: true */
+/*jslint nomen: true*/
+/*global Mustache,google,$ */
+/*jslint white: false */
+function formatDate(dateStr) {
+    var date = new Date(dateStr);
+    return date.getDate() + "." + (date.getMonth() + 1) + "." + (date.getYear() + 1900);
+}
+
+$(document).ready(function () {
+    var n,
+        resid = $.url().param("res-id");
+
+    // Load house news feed
+    $.vera.getResidenceConfig(resid, function (rcfg) {
+        $.getJSON("/feed/view/" + rcfg.news["public-token"] + "/json", function (news) {
+            var div,
+                insertpoint = $("#news-insertpoint");
+            for (n = 0; n < news.feed.length; n = n + 1) {
+                console.log(news.feed[n]);
+                div = $("<div class='news-entry'></div>");
+                var read_futher_text = "";
+                if (news.feed[n].attachment !== undefined) {
+                    div.attr("id", news.feed[n].id);
+                    read_futher_text = "<br/><br/><span style='text-decoration: underline; border: none; padding-left: 0px' class='news-entry'>Weiter lesen...</span>";
+                }
+                div.append($("<h2>" + news.feed[n].title + "</h2>"));
+                div.append($("<div class='news-date'>Veröffentlicht am " + formatDate(news.feed[n].date) + "</div>"));
+                div.append($("<div class='news-text'>" + decodeURIComponent(news.feed[n].text) + read_futher_text + "</div>"));
+                insertpoint.append(div);
+            }
+
+            // Create click handler
+            $(".news-entry").click(function (evt) {
+                var el = $(evt.target);
+
+                // The click may be captured by a child object of news-entry
+                while (!el.hasClass("news-entry") || el.attr("id") === undefined) {
+                    el = el.parent();
+                    if (el.attr("id") === "news-insertpoint") {
+                        // Obviously no clickable news-entry
+                        return;
+                    }
+                }
+                var target = el.attr("id");
+                if (target === undefined)
+                    return;
+                
+                var fid = rcfg.news["public-token"];
+                window.parent.location = "http://server.bhs-vera.de:5984/feed/" + fid + "/entry/" + target + "/file.pdf";
+            });
+        });
+    });
+});
+</script>
+    </head>
+    <body>
+        <h1>Aktuelles aus dem Haus</h1>
+        <div id="news-insertpoint" style="margin-left: 0em">
+
+        </div>
+    </body>
+</html>

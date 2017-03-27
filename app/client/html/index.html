@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <link rel="stylesheet" href="../css/vera.css" />
+
+        <!--<script data-main="../js/index" src="../js/require.js"></script> //-->
+
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+        <script src="../js/Chart.js"></script>
+        <script src="../js/json2.js"></script>
+        <script src="../js/sha1.js"></script>
+        <script src="../js/jquery.couch.js"></script>                <!--// for CouchDB access via convenience functions //-->  
+        <script src="../js/jquery.serialize-object.min.js"></script> <!--// for form to JSON serialization //-->
+        <script src="../js/jquery-ui-timepicker-addon.js"></script>
+        <script src="../js/purl.js"></script>
+        <script src="../js/moment-with-locales.min.js"></script>
+        <script src="../js/mustache.js"></script>                    <!--// for templating //-->
+        <script src="../js/vera.js"></script>                        <!--// Vera client logic //-->
+        <script src="../js/vera.index.js"></script>                  <!--// (UI) scripting for index.html //-->
+        <script src="../content/activity-index.js"></script>
+        <script src="/feed/view/iaknrqumr1hmf4r6/js"></script>       <!--// Buchrezensionen //-->
+
+        <title>VERA</title>
+    </head>
+    <body>
+        <div id="loading-overlay"><img src="../img/loading.gif" style="margin: 30%"></div>
+        <div data-role="page" id="page_main" style="background-color: white !important">
+            <img src="../img/on-off.jpg" onClick="javascript: window.location='login.html'" style="position: fixed; left: 10px; top: 10px; width: 50px; border: 0px"/>
+            <table style="border: 1px; width: 80%; border-spacing: 1em; margin-left: 9%; margin-top: 1.9%; table-layout: fixed">
+                <tr>
+                    <td class="fatbutton bluegradback">
+                        <div class="fatbutton" id="mypage">
+                            <img src="../img/meine_seite.jpg" alt="Bild fuer Meine Seite" class="quad" />
+                            <br/>
+                            Meine Seite
+                        </div>
+                    </td>
+                    <td class="fatbutton bluegradback">
+                        <div class="fatbutton" id="myhouse">
+                            <img src="../img/mein_haus.png" alt="Bild fuer Mein Haus" class="quad" />
+                            <br/>
+                            Mein Haus
+                        </div>
+                    </td>
+                    <td class="fatbutton bluegradback">
+                        <div class="fatbutton" id="myhealth">
+                            <img src="../img/gesundheit.png" alt="Bild fuer Gesundheit" class="quad" />
+                            <br/>
+                            Meine Gesundheit
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="fatbutton bluegradback">
+                        <div class="fatbutton" id="mycalendar">
+                            <img src="../img/kalender.png" alt="Bild fuer Kalender" class="quad"/>
+                            <div style="position: absolute; top: 350px; left: 270px; color: black">
+                                <span style="font-size: 16pt" id="month">{{date.month}}</span><br/>
+                                <span style="font-size: 34pt" id="day">{{date.day}}</a>
+                            </div>
+                            <br/>
+                            Mein Kalender
+                        </div>
+                    </td>
+                    <td class="fatbutton bluegradback">
+                        <div class="fatbutton" id="internet">
+                            <img src="../img/internet.png" alt="Bild fuer Internet" class="quad" />
+                            <br/>
+                            Internet
+                        </div>
+                    </td>
+                    <td class="fatbutton bluegradback">
+                        <div class="fatbutton" id="news">
+                            <img src="../img/aktuelles.png" alt="Bild fuer Aktuelles" class="quad" />
+                            <br/>
+                            Aktuelles
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="padding: 0px; margin: 0px">
+                        <table style="border: 0px; border-spacing: 0em; table-layout: fixed; width: 100%; padding: 0px; margin: 0px">
+                            <tr>
+                                <td class="smallbutton bluegradback has-click-target" id="smallbutton-menu" data-target="http://www.bhs-vera.de/speiseplan.pdf">
+                                    <img src="../img/menu.png" style="height: 3em; float: left; margin-left: 1em" alt="Speiseplan Bild"/>
+                                    <br/>
+                                    Menükarte
+                                </td>
+                                <td style="width: 1em"></td>
+                                <td class="smallbutton bluegradback has-click-target" id="smallbutton-help" data-target="http://www.bhs-vera.de/tipps-und-hilfe.pdf">
+                                    <img src="../img/helpquestion.png" style="height: 3em; float: left; margin-left: 1em" alt="Tipps / Hilfe Bild"/>
+                                    <br/>
+                                    Tipps/Hilfen <!--// laut DIN 5008 ohne Leerzeichen "/" //-->
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            
+        </div>
+
+        <div style="display: none; position: fixed; left: 10px; bottom: -5px; z-index: 1000" id="walkingman">
+            <img src="../img/walkinghuman.gif" id="walkingman-img" style="height: 6.4em;"/>
+            <span id="walkingman-points"></span>
+        </div>
+        <div id="activitybar" style="position: fixed; left: 0px; bottom: 0px; table-layout: fixed; border: 0px; width: 100%; height: 3em; margin-left: 0; margin-right: 0; z-index: 100; background: -moz-linear-gradient(to right, yellow, green); background: -webkit-linear-gradient(left,yellow, green);">
+
+        </div>
+
+        <div data-role="page" id="page_mypage">
+            <table class="page_table">
+                <tr>
+                    <td class="page_menu bluegradback">
+                        <div data-role="button" class="backbutton">Zurück</div><br/>
+                        <div href="#" data-role="button" class="menubutton" data-target="page_mypage_mypage">Meine Seite</div>
+                        <div href="#" data-role="button" class="menubutton" data-target="page_mypage_notes">Meine Notizen</div>
+                    </td>
+                    <td class="page_content">
+                        <div class="page_content_panel" id="page_mypage_mypage">
+                            <h1>Meine Seite</h1>
+                            <img src="../img/meine_seite.jpg" alt="Bild fuer Meine Seite" class="quad" style="float: right; margin: 0.5em" />
+
+                            <p id="page_mypage_mypage_motd">
+                            Hallo {{name.salutation}} {{name.last}}!
+                            </p>
+                            <p>
+                            Sie finden hier eine Übersicht
+                            Ihrer anstehenden Termine.
+                            </p>
+
+                            <div id="page_mypage_mypage_events" style="display: none">
+                                Ihre heutigen Termine auf einen Blick:
+                                <table id="page_mypage_mypage_eventstable_parent" cellpadding="15">
+                                    <thead>
+                                        <tr><th>Datum und Uhrzeit</th><th>Termin</th></tr>
+                                    </thead>
+                                    <tbody id="page_mypage_mypage_eventstable">
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id="page_mypage_mypage_noevents" style="display: none">
+                                Sie haben heute keine Termine.
+                            </div>
+                        </div>
+
+                        <div class="page_content_panel" id="page_mypage_notes">
+                            <h1>Meine Notizen</h1>
+                            <div id="page_mypage_notes_create_note" class="content-button">Notiz erstellen</div>
+                            <h3>Bisherige Notizen: </h3>
+                            <ol id="notes-entry-list" data-role="listview">
+                            </ol>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!--// Section for "Mein Haus" subpage and below //-->
+        <div data-role="page" id="page_myhouse">
+            <table class="page_table">
+                <tr>
+                    <td class="page_menu bluegradback">
+                        <div data-role="button" class="backbutton">Zurück</div><br/>
+                        <div href="#" data-role="button" class="menubutton" data-target="page_myhouse_myhouse">Mein Haus</div>
+                        <div data-role="button" class="menubutton" data-target="page_myhouse_houseevents" style="line-height: 26pt">Angebote am Standort</div>
+                        <div data-role="button" class="menubutton" data-target="page_myhouse_envevents" style="line-height: 26pt">Angebote in der Umgebung</div>
+                    </td>
+                    <td class="page_content">
+                        <div class="page_content_panel" id="page_myhouse_myhouse" style="overflow: hidden">
+                            <iframe style="display: none; height: 450px" id="iframe-residence-about" src="" frameborder="0" width="100%"></iframe>
+                            <iframe id="iframe-residence-news" style="height: 475px" src="" frameborder="0" width="100%"></iframe>
+
+                            <table style="width: 100%" cellpadding="4">
+                            <tr>
+                            <td>
+                            <div class="content-button has-click-target" id="button-residence-paper" data-target="" style="display: none">Die Hauszeitung</div>
+                            </td>
+                            <td>
+                            <div class="content-button has-click-target" id="button-about-myhouse" data-target-frame="_dialog">Über das Haus</div></td>
+                            </tr>
+                            </table>
+                            
+                        </div>
+                        <div class="page_content_panel" id="page_myhouse_houseevents" style="display: none">
+                            <h1 class="page_content_heading">Angebote am Standort</h1>
+                            <table class="eventstable" id="page_mypage_myhouse_eventtable">
+                                <thead><tr><th colspan="2">Kurse und Veranstaltungen</th></tr></thead>
+                                <tbody>
+                                   
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="page_content_panel" id="page_myhouse_envevents" style="display: none">
+                            <h1 class="page_content_heading">Angebote in der Umgebung</h1>
+                            <p>
+                                Was es alles Spannendes und Wissenswertes in der Umgebung der Stiftungsresidenz zu entdecken gibt, wissen Sie bestimmt  besser als wir! 
+                                <br />
+                                Deswegen möchten wir gern gemeinsam mit Ihnen und Ihren Anregungen diese Seite füllen.
+                            </p>
+                            <table class="eventstable" id="page_myhouse_envevents_table">
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div data-role="page" id="page_myhealth">
+            <table class="page_table">
+                <tr>
+                    <td class="page_menu bluegradback">
+                        <div data-role="button" class="backbutton">Zurück</div><br/>
+                        <div data-role="button" class="menubutton" data-target="page_myhealth_activities">Meine Aktivitäten</div>
+                        <div data-role="button" class="menubutton" data-target="page_myhealth_movies">Bewegungsfilme</div>
+                        <div data-role="button" class="menubutton" data-target="page_myhealth_neuronation">Gedächtnistraining</div>
+                        <div data-role="button" class="menubutton" data-target="page_myhealth_acitivityindex" style="line-height: 26px">Mein Aktivitätsindex</div>
+                    </td>
+                    <td class="page_content">
+                        <div class="page_content_panel" id="page_myhealth_activities">
+                            <h1 class="page_content_heading">Meine Aktivitäten</h1>
+                            <div style="width: 75%">
+                                <div class="activity-category-button content-button" data-target="alltag">Alltagsaktivitäten</div>
+                                <div class="activity-category-button content-button" data-target="ausdauer">Ausdauer</div>
+                                <div class="activity-category-button content-button" data-target="kraft">Kraft</div>
+                                <div class="activity-category-button content-button" data-target="neuronation">Geistige Aktivität</div>
+                                <div class="activity-category-button content-button" data-target="belastung">Das i-Tüpfelchen</div>
+                            </div>
+                        </div>
+
+                        <div class="page_content_panel" id="page_myhealth_movies">
+                            <h1 class="page_content_heading">Bewegungsfilme</h1>
+
+                            <table id="movietable" style="border-spacing: 1em; border: 3px solid black; border-collapse: collapse;">
+                                <thead>
+                                <tr class="has-click-target"data-target="http://www.bhs-vera.de/video_bevor_sie_starten.pdf">
+                                    <td><img src="../img/bhs-logo.png" style="width: 200px" alt="BHS Logo"/></td>
+                                    <td><a href="http://www.bhs-vera.de/video_bevor_sie_starten.pdf">Hinweise bevor Sie starten</a></td>
+                                </tr>
+                            </thead>
+                                <tbody id="movietable-body">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="page_content_panel" id="page_myhealth_neuronation">
+                            <h1 class="page_content_heading">Gedächtnistraining</h1>
+                            <table width="95%" height="70%"><tr>
+                            <td class="page-content-center-middle">
+                                <img src="../img/neuronation-logo.png" id="start-neuronation-button" class="has-click-target shadow" data-target="" alt="Gedächtnistraining starten"></img>
+                            </td>
+                            </tr></table>
+                        </div>
+
+                        <div class="page_content_panel" id="page_myhealth_acitivityindex">
+                            <h1 class="page_content_heading">Mein Aktivitätsindex</h1>
+                            <span id="healthdebug" style="color: red; font-size: 8pt"></span>
+
+                            <div onClick="javascript:activityIndexClick('verlauf')" class="content-button" data-target="verlauf">Mein Aktivitätsindex im Verlauf</div>
+                            <div onClick="javascript:activityIndexClick('warum')" class="content-button" data-target="warum">Wozu dient der Aktivitätsindex?</div>
+                            <div onClick="javascript:activityIndexClick('wie')" class="content-button" data-target="wie">Wie bildet sich der Aktivitätsindex?</div>
+                            <div onClick="javascript:activityIndexClick('wieviel')" class="content-button" data-target="wieviel">Wie viel Aktivität pro Woche wird empfohlen?</div>
+                            <div onClick="javascript:activityIndexClick('intensitaet')" class="content-button" data-target="intensitaet">Wie deute ich die Intensität meiner Aktivität?</div>
+                            <div onClick="javascript:activityIndexClick('beachten')" class="content-button" data-target="beachten">Was gilt es zu beachten?</div>
+                            <div onClick="javascript:activityIndexClick('prozent')" class="content-button" data-target="prozent">Wie erreiche ich die 100%?</div>
+                        </div>
+
+                        <div style="border: 5px solid black; border-radius: 20px; position: fixed; left: 48px; top: 48px; bottom: 48px; right: 48px; background-color: white; margin: 1.9%; padding: 1.9%; z-index: 1000; display: none" id="activity-dialog">
+                            <img src="../img/x_button.png" style="width: 50px; position: absolute; right: -16px; top: -16px" id="activity-dialog-close-button"/>
+                            <div id="activity-dialog-content-template" style="display: none">
+                                <h1 class="page_content_heading">{{{activity.name}}}</h1>
+                                <p>
+                                    {{{activity.description}}}
+                                </p>
+                                <p>
+                                    Berühren Sie die Wochentage, an denen Sie eine oder mehrere der genannten
+                                    Aktivitäten durchgeführt haben:
+                                </p>
+                                <p style="font-weight: bold; text-align: center">{{{activity.week}}}</p>
+                                <table style="border-spacing:10px">
+                                    <tr data-activity="{{{activity.category}}}">
+                                        <td class="activity-day" id="activity-day-{{{activity.start0}}}" data-starttime="{{{activity.start0}}}">Mo.</td>
+                                        <td class="activity-day" id="activity-day-{{{activity.start1}}}" data-starttime="{{{activity.start1}}}">Di.</td>
+                                        <td class="activity-day" id="activity-day-{{{activity.start2}}}" data-starttime="{{{activity.start2}}}">Mi.</td>
+                                        <td class="activity-day" id="activity-day-{{{activity.start3}}}" data-starttime="{{{activity.start3}}}">Do.</td>
+                                        <td class="activity-day" id="activity-day-{{{activity.start4}}}" data-starttime="{{{activity.start4}}}">Fr.</td>
+                                        <td class="activity-day" id="activity-day-{{{activity.start5}}}" data-starttime="{{{activity.start5}}}">Sa.</td>
+                                        <td class="activity-day" id="activity-day-{{{activity.start6}}}" data-starttime="{{{activity.start6}}}">So.</td>
+                                    </td>
+                                </table>
+                                <p>{{{activity.motivation}}}</p>
+                            </div>
+                            <div id="activity-dialog-content">
+                            </div>
+                        </div>
+
+                        <div style="border: 0px; position: fixed; left: 70px; top: 70px; right: 70px; bottom: 70px; z-index: 900; display: none;" id="activity-index-dialog">
+                            <img src="../img/x_button.png" style="width: 50px; position: absolute; right: 0px; top: -4px; z-index: 1500" id="activity-index-dialog-close-button"/>
+                            <div style="border: 5px solid black; border-radius: 20px;background-color: white;  position: fixed; left: 70px; top: 70px; right: 70px; bottom: 70px; z-index: 1000; margin: 1.9%; padding: 1.9%; display: inherit; overflow: auto" id="activity-index-dialog-inner">
+                                <div id="activity-index-dialog-content-template" style="display: none">
+                                    <h1 class="page_content_heading">{{{activity-index.name}}}</h1>
+                                    <p>{{{activity-index.description}}}</p>
+                                </div>
+                                <div id="activity-index-dialog-content">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div data-role="page" id="page_mycalendar">
+            <table class="page_table">
+                <tr>
+                    <td  class="page_menu bluegradback">
+                        <div data-role="button" class="backbutton bar-visibility-button">Zurück</div><br/>
+                        <div data-role="button" class="menubutton bar-visibility-button" id="calendar-view-day-button" data-target="page_mycalendar_calendartoday">Tagesansicht</div>
+                        <div data-role="button" class="menubutton bar-visibility-button" id="calendar-view-week-button" data-target="page_mycalendar_calendarweek">Wochenansicht</div>
+                        <div data-role="button" class="menubutton bar-invisibility-button" data-target="page_mycalendar_newevent">Neuer Eintrag</div>
+                    </td>
+                    <td class="page_content">
+                         <div class="page_content_panel" id="page_mycalendar_calendartoday">
+                            <iframe id="iframe-calendar-today" style="width: 97%; height: 97%; border: 0px"></iframe>
+                        </div>
+                        <div class="page_content_panel" id="page_mycalendar_calendarweek">
+                            <iframe id="iframe-calendar-week" style="width: 97%; height: 97%; border: 0px"></iframe>
+                        </div>
+                        <div class="page_content_panel" id="page_mycalendar_newevent" style="display: none">
+                            <h1 class="page_content_heading">Neuer Kalendereintrag</h1>
+                            <form id="calendar-newevent-form">
+                                <input type="hidden" name="_id" value="de.bremer-heimstiftung.vera.event.fullcalendar:" />
+                                <div style="display: none; position: fixed; top: 200px; left: 500px; width: 520px; height: 470px; z-index: 100" id="datepicker-container">
+                                </div>
+                                
+                                <table style="border: 0px; border-spacing: 10px; border-collapse: separate; width: 700px">
+                                    <tr>
+                                        <td colspan="3">
+                                            <input type="text" name="title" placeholder="Titel des Kalendereintrags" style="border: 3px solid black; width: 100%; font-size: 20pt"/>
+                                        </td>
+                                    <tr>
+                                        <td>Start:</td>
+                                        <td>
+                                            <div id="calendar-startdate-container" style="border: 3px solid black; width: 200px; font-size: 22pt; height: 26pt;">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input id="calendar-starttime" type="text" name="starttime" style="border: 3px solid black; width: 100%; font-size: 22pt" value="10:00"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ende:</td>
+                                        <td>
+                                            <div id="calendar-enddate-container" style="border: 3px solid black; width: 200px; font-size: 22pt; height: 26pt">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input id="calendar-endtime" type="text" name="endtime" style="border: 3px solid black; width: 100%; font-size: 22pt" value="12:00"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <textarea name="description" style="border: 3px solid black; height: 150px; width: 100%; font-size: 20pt" placeholder="Beschreibung" id="calendar-description"></textarea>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <div style="width: 500px; display: table; margin-top:0.5em; z-index: 100">
+                                    <div id="create-calendar-event-button" class="content-button" style="display: table-cell; width: 220px;z-index: 100">Erstellen</div>
+                                    <div style="display: table-cell; width: 1em"></div>
+                                    <div id="cancel-event-creation-button" class="content-button" style="display: table-cell; width: 220px;z-index: 100">Abbrechen</div>
+                                </div>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div data-role="page" id="page_internet">
+            <table class="page_table">
+                <tr>
+                    <td class="page_menu bluegradback">
+                        <div data-role="button" class="backbutton">Zurück</div><br/>
+                        <div data-role="button" class="menubutton" data-target="page_internet_internet">Internet</div>
+                        <div data-role="button" class="menubutton" data-target="page_internet_search">Suchmaschine</div>
+                        <div data-role="button" class="menubutton" data-target="page_internet_wikipedia">Lexikon</div>
+                        <div data-role="button" class="menubutton" data-target="page_internet_maps">Landkarte</div>
+                    </td>
+                    <td class="page_content">
+                        <div class="page_content_panel" id="page_internet_internet">
+                            <h1 class="page_content_heading">Internet</h1>
+                            <p style="text-align: center">
+                                Durch Tippen auf das Symbol gelangen Sie über den<br/><b>Webbrowser</b> ins Internet.
+                                <br />
+                                <br />
+                                <a href="chrome://about:blank"><img src="../img/internet.png" width="400px" style="border: 0px"></a>
+                            </p>
+                        </div>
+                        <div class="page_content_panel" id="page_internet_search">
+                            <h1 class="page_content_heading">Suchmaschine</h1>
+                            <p style="text-align: center">
+                                Durch Tippen auf das Symbol gelangen Sie zu der Suchmaschine <b>Google</b>.
+                                <br />
+                                <br />
+                                <a href="chrome://www.google.de/"><img src="../img/internet_search.png" width="600px" style="border: 0px"></a>
+                            </p>
+                        </div>
+                        <div class="page_content_panel" id="page_internet_wikipedia">
+                            <h1 class="page_content_heading">Lexikon</h1>
+                            <p style="text-align: center">
+                                Durch Tippen auf das Symbol gelangen Sie zu der freien Enzyklopädie/Nachschlagewerk <b>Wikipedia</b>.
+                                <br />
+                                <br />
+                                <a href="chrome://de.wikipedia.org/"><img src="../img/internet_wikipedia.png" width="340px" style="border: 0px"></a>
+                            </p>
+                        </div>
+                        <div class="page_content_panel" id="page_internet_maps">
+                            <h1 class="page_content_heading">Landkarte</h1>
+                            <p style="text-align: center">
+                                Durch Tippen auf das Symbol gelangen Sie zu der Internetseite von <b>Google Maps</b>. 
+                                Diese bietet Ihnen Ansichten von der Weltkarte bis zum Stadtplan.
+                                <br />
+                                <br />
+                                <a href="chrome://maps.google.de"><img src="../img/internet_maps.png" width="500px" style="border: 0px"></a>
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div data-role="page" id="page_news">
+            <table class="page_table">
+                <tr>
+                    <td class="page_menu bluegradback">
+                        <div data-role="button" class="backbutton">Zurück</div><br/>
+
+                        <div data-role="button" class="menubutton" data-target="page_news_bhsblog">Bremer Heimstiftung</div>
+                        <div data-role="button" class="menubutton" data-target="page_news_health">Gesundheitsratgeber</div>
+                        <div data-role="button" class="menubutton" data-target="page_news_books">Dies &amp; Das</div>
+                        <!--//<div data-role="button" class="menubutton" data-target="page_news_receipts">Rezepte</div>//-->
+                        <div data-role="button" class="menubutton" data-target="page_news_bremen">Bremen</div>
+                    </td>
+                    <td class="page_content">
+                        <div class="page_content_panel" id="page_news_health">
+                            <h1 class="page_content_heading">Gesundheitsratgeber</h1>
+                            <p>
+                                Diese Artikel wurden Ihnen bereit gestellt mit freundlicher Unterstützung des 
+                                Senioren-Ratgebers. Weitere Artikel finden Sie unter 
+                                folgendem Link: <a href="chrome://www.senioren-ratgeber.de/">www.senioren-ratgeber.de</a>
+                            </p>
+                            <div id="feed-health">
+                            </div>
+                        </div>
+                        <div class="page_content_panel" id="page_news_bhsblog">
+                            <h1 class="page_content_heading">LebensWEISEN</h1>
+                            <h2>Der Blog der Bremer Heimstiftung</h2>
+                            <p>
+                                Diese Artikel wurden Ihnen bereit gestellt mit freundlicher Unterstützung des 
+                                Kundenzentrums der Bremer Heimstiftung. 
+                                Weitere Artikel finden Sie unter folgendem Link: <a href="chrome://www.lebens-weisen.de/">www.lebens-weisen.de</a>
+                            </p>
+                            <div id="feed-bhsblog">
+                            </div>
+                        </div>
+                        <div class="page_content_panel" id="page_news_books">
+                            <h1>Dies &amp; Das</h1>
+                            <p>
+                                Unter dieser Rubrik haben wir wechselnde und ganz unterschiedliche Inhalte für Sie zusammengestellt: Buchrezensionen, Rezeptvorschläge und vieles mehr. 
+                                <br/>
+                                Lassen Sie sich überraschen!
+                            </p>
+                            <table id="news-books-insertpoint">
+                              
+                            </table>
+                        </div>
+                        <div class="page_content_panel" id="page_news_receipts">
+                            <h1>Rezepte</h1>
+                            <p>
+Deutschlands Initiative für gesunde Ernährung und mehr Bewegung <emph>IN FORM</emph> bietet eine Auswahl unterschiedlicher Rezepte für SeniorInnen an. Einige Beispiele finden Sie hier:
+                            </p>
+                            <table>
+                                <tr class="has-click-target" data-target="chrome://www.in-form.de/buergerportal/in-form-sein/rezepte/rezepte-fuer-senioren/suppen-und-eintoepfe.html?ansicht=cbfrhqil">
+                                    <td>
+                                        <img src="https://www.in-form.de/typo3temp/pics/Italienische_Gemuesesuppe_liste_DGE_c2f3e831da.jpg">
+                                    </td>
+                                    <td>Suppen und Eintöpfe</td>
+                                </tr>
+                                <tr class="has-click-target" data-target="chrome://www.in-form.de/buergerportal/in-form-sein/rezepte/rezepte-fuer-senioren/klassiker-fuer-jeden-tag.html?ansicht=cbfrhqil">
+                                    <td>
+                                        <img src="https://www.in-form.de/typo3temp/pics/Heringsfilet_liste_DGE_c3253b31a5.jpg">
+                                    </td>
+                                    <td>Klassiker für jeden Tag</td>
+                                </tr>
+                                <tr class="has-click-target" data-target="chrome://www.in-form.de/buergerportal/in-form-sein/rezepte/rezepte-fuer-senioren/suesses-fuer-die-seele.html?ansicht=cbfrhqil">
+                                    <td>
+                                        <img src="https://www.in-form.de/typo3temp/pics/Griesdessert_liste_DGE_988bb21ae6.jpg">
+                                    </td>
+                                    <td>Süßes für die Seele</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="page_content_panel" id="page_news_bremen">
+                            <h1>Bremen</h1>
+                            <div class="link-table has-click-target" data-target="chrome://www.bremen.de/aktuelles">
+                                <div class="link-table-cell">
+                                    <img src="http://www.vergabe.bremen.de/NetServer/_images/dach_bremen_online.gif" style="width:150px"/>
+                                </div>
+                                <div class="link-table-cell">
+                                    <h2>Das Stadtportal für die freie Hansestadt Bremen</h2>
+                                </div>
+                            </div>
+                            <div class="link-table has-click-target" data-target="chrome://www.radiobremen.de/index.html">
+                                <div class="link-table-cell">
+                                    <img src="http://www.radiobremen.de/resources/bilder/logo-radiobremen.png" style="width:150px"/>
+                                </div>
+                                <div class="link-table-cell">
+                                    <h2>Radio Bremen</h2>
+                                </div>
+                            </div>
+                            <div class="link-table has-click-target" data-target="chrome://www.bremen-tourismus.de/veranstaltungen">
+                                <div class="link-table-cell">
+                                    <img src="http://www.vergabe.bremen.de/NetServer/_images/dach_bremen_online.gif" style="width:150px"/>
+                                </div>
+                                <div class="link-table-cell">
+                                    <h2>Veranstaltungstipps in Bremen</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="popup-dialog" data-role="page">
+            <div data-role="content">
+                <p id="popup-message">
+                </p>
+                <button id="popup-close-button" class="content-real-button">Ok</button>
+            </div>
+        </div>
+        
+        <div id="calendar-entry-dialog-outer">
+            <img src="../img/x_button.png" id="calendar-entry-dialog-close-button"/>
+            <div style="border: 5px solid black; border-radius: 20px;background-color: white;  position: fixed; left: 70px; top: 70px; right: 70px; bottom: 70px; z-index: 1000; margin: 1.9%; padding: 1.9%; display: none; overflow: auto" id="calendar-entry-dialog-inner">
+                <div id="calendar-entry-dialog-content-template" style="display: none">
+                    <h1 class="page_content_heading">{{title}}</h1>
+                    <p><b>Ort:</b> {{location}}</p>
+                    <b>Beschreibung:</b>
+                    <div style="border: 2px solid black; border-radius: 10px">
+                        <p>{{description}}</p>
+                    </div>
+                    <br />
+                    <br />
+                    <!--<div style="border: 2px solid black; border-radius: 10px">-->
+                        <table style="border: 0px">
+                            <tr>
+                            <td><b>Beginn:</b></td> <td> {{start}}</td>
+                            </tr>
+                            <tr>
+                            <td><b>Ende:</b></td> <td> {{end}}</td>
+                            </tr>
+                            <tr>
+                            <td><b>Ansprechpartner:</b></td><td> {{contact}}</td>
+                            </tr>
+                        </table>
+                    <!--</div>-->
+                </div>
+                <div id="calendar-entry-dialog-content">
+                </div>
+
+                <div class="content-button" id="calendar-entry-delete-button">Eintrag löschen</div>
+            </div>
+        </div>
+
+        <div id="iframe-dialog-outer" style="display: none; position: static">
+            <img src="../img/x_button.png" id="iframe-dialog-close-button" style="width: 50px; position: fixed; right: 80px; top: 80px; z-index: 1500"/>
+            <div style="border: 5px solid black; border-radius: 20px;background-color: white;  position: fixed; left: 70px; top: 70px; right: 70px; bottom: 70px; z-index: 1000; margin: 1.9%; padding: 1.9%; display: block; overflow: auto" id="iframe-dialog-inner">
+                <iframe id="iframe-dialog-frame" style="width: 95%; height: 95%; border: 0px"></iframe>
+            </div>
+        </div>
+        
+        <div style="border: 0px; position: fixed; left: 70px; top: 70px; right: 70px; bottom: 70px; z-index: 900; display: none;" id="residence-calendar-entry-dialog-outer">
+            <img src="../img/x_button.png" style="width: 50px; position: absolute; right: 14px; top: 0px; z-index: 1500" id="residence-calendar-entry-dialog-close-button"/>
+            <div style="border: 5px solid black; border-radius: 20px;background-color: white;  position: fixed; left: 70px; top: 70px; right: 70px; bottom: 70px; z-index: 1000; margin: 1.9%; padding: 1.9%; display: none; overflow: auto" id="residence-calendar-entry-dialog-inner">
+                <div id="residence-calendar-entry-dialog-content-template" style="display: none">
+                    <input type="hidden" id="residence-calendar-entry-dialog-id" name="_id" />
+                    <h1 class="page_content_heading">{{title}}</h1>
+                    <b>Beschreibung:</b>
+                    <div style="border: 2px solid black; border-radius: 10px">
+                        <p>{{description}}</p>
+                    </div>
+                    <br />
+                    <div style="border: 2px solid black; border-radius: 10px">
+                        <table style="border: 0px">
+                            <tr><td><b>Beginn:</b></td> <td>{{start}}</td></tr>
+                            <tr><td><b>Ende:</b></td> <td>{{end}}</td></tr>
+                            <tr><td><b>Ort:</b></td> <td>{{location}}</td></tr>
+                            <tr><td><b>Ansprechpartner:</b></td> <td>{{contact}}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div id="residence-calendar-entry-dialog-content">
+                </div>
+                <button id="residence-calendar-add-entry-to-personal-button" class="content-real-button">In meinen Kalender eintragen</button>
+            </div>
+        </div>
+        
+        
+        <div id="note-entry-dialog-outer" title="Notiz" style="border: 0px; position: fixed; left: 130px; top: 70px; right: 130px; bottom: 130px; z-index: 900; display: none;">
+            <img src="../img/x_button.png" style="width: 50px; position: absolute; right: 14px; top: 14px; z-index: 1500" id="note-entry-dialog-close-button"/>
+            <div style="border: 5px solid black; border-radius: 20px;background-color: white;  position: fixed; left: 130px; top: 70px; right: 130px; bottom: 130px; z-index: 1000; margin: 1.9%; padding: 1.9%; display: none; overflow: auto" id="note-entry-dialog-inner">
+                <input type="hidden" id="note-entry-dialog-note-id" />
+                <h1 id="note-entry-dialog-title" name="note-entry-dialog-title">Titel</h1>
+                <h3 id="note-entry-dialog-time" name="note-entry-dialog-time">Zeit</h3>
+                <p id="note-entry-dialog-content" name="note-entry-dialog-content">Inhalt</p>
+                <table style="border: 0px; width: 100%">
+                    <tr>
+                        <td style="width: 33%; text-align: center"><button id="note-entry-dialog-ok-button" class="content-real-button">OK</button></td>
+                        <td style="width: 33%; text-align: center"><button id="note-entry-dialog-edit-button" class="content-real-button">Notiz bearbeiten</button></td>
+                        <td stlye="width: 33%; text-align: center"><button id="note-entry-dialog-delete-button" class="content-real-button">Notiz löschen</button></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="note-entry-create-dialog-outer" title="Notiz erstellen/bearbeiten" style="border: 0px; position: fixed; left: 130px; top: 5px; right: 130px; height: 270px; z-index: 900; display: none">
+            <img src="../img/x_button.png" style="width: 50px; position: absolute; right: 14px; top: 0px; z-index: 1500" id="note-entry-create-dialog-close-button"/>
+            <div style="border: 5px solid black; border-radius: 20px;background-color: white;  position: fixed; left: 130px; top: 5px; right: 130px; height: 270px; z-index: 1000; margin: 1.9%; padding: 1.9%; display: none; overflow: auto" id="note-entry-create-dialog-inner">
+                <form id="note-entry-create-dialog-form" action="javascript:addNotesEntry()">
+                    <input type="hidden" id="note-entry-create-dialog-note-id"/>
+                    <input type="text" id="note-entry-create-dialog-title"  class="note-content" placeholder="Titel" data-changed="false" onChange="$(this).attr('data-changed', 'true')"/>
+                    <textarea id="note-entry-create-dialog-content" class="note-content" placeholder="Inhalt der Notiz" data-changed="false" onChange="$(this).attr('data-changed', 'true')"></textarea>
+                    <br />
+                    <input name="create" id="note-entry-create-button" type="submit" value="Speichern"/>
+                </form>
+        </div>
+    </body>
+</html>

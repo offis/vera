@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,height=device-height">
+        <title>View Env Offer</title>
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script src="../js/purl.js"></script>
+        <link rel="stylesheet" type="text/css" href="../css/vera.css" />
+        <style>
+        body {
+            font-size: 14pt;
+            padding: 0em;
+            margin: 0px;
+        }
+        .description {
+            border: 0px dotted gray;
+            font-size: 20pt;
+            overflow: hidden;
+            padding: 0.5em;
+        }
+        #image_placeholder {
+            border: 0px solid black;
+            width: 500px;
+            height: 375px;
+        }
+        #edit-title {
+            font-size: 50pt;
+            border: 0px dotted gray;
+            padding-left: 0.25em;
+        }
+        #tablet {
+            border: 5px solid black;
+            display: none;
+            margin: 0.9em;
+            overflow: hidden;
+            height: 725px !important;
+        }
+        #notification {
+            font-color: orange;
+        }
+        </style>
+    </head>
+    <body>
+    <div id="loading-overlay"><img src="../img/loading.gif" style="margin: 30%"></div>
+    <div id="tablet">
+        <div id="edit-title">
+            <span>Titel des Angebots</span>
+        </div>
+        <div id="edit-subtitle">
+            
+        </div>
+        <table style="width: 100%">
+            <tr>
+            <td style="width: 500px; height: 375px; vertical-align: top">
+                <div id="edit-desc-1" class="description">
+                <span>
+                </span>
+                </div>
+            </td>
+            <td style="width: 500px; height: 375px; vertical-align: top">
+            <div id="image_placeholder">
+            </div>
+            </td>
+            </tr>
+            <tr>
+                <td colspan="2"><table style="width: 100%; table-layout: fixed">
+                <tr>
+                    <td>
+                        <div id="edit-desc-2" class="description" style="width: 100%; height: 230px"><span></span></div>
+                    </td>
+                    <td>
+                        <div id="edit-desc-3" class="description" style="width: 100%; height: 230px"><span></span></div>
+                    </td>
+                    <td>
+                        <div id="edit-desc-4" class="description" style="width: 100%; height: 230px"><span></span></div>
+                    </td>
+                </tr>
+                </table></td>
+            </tr>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+        var url = $.url();
+        var id  = url.param("id");
+        var rid = url.param("rid");
+        var db = "vera_residence_" + rid;
+        var rev = undefined;
+
+        function loadDoc() {
+            $.couch.db(db).openDoc(id, {
+                success: function(doc) {
+                    rev = doc._rev;
+
+                    try {
+                        $("#edit-title").html($(doc.title));
+                    } catch(err) {
+                        $("#edit-title").html($("<span>" + doc.title + "</span>"));
+                    }
+                    
+
+                    for (var i = 1; i <= 4; i++) {
+                        if(doc["desc-" + i] !== undefined) {
+                            $("#edit-desc-" + i).html($(doc["desc-" + i]));
+                        }
+                    }
+
+                    if(doc["img-0"] !== undefined) {
+                        var preview = document.getElementById('image_placeholder');
+                        preview.style.background =  doc["img-0"];
+                        $("#image_placeholder").css("background-size", "500px 375px");
+                    }
+
+                    $("#tablet").show();
+                    $("#loading-overlay").hide();
+                },
+                error: function(err) {
+                    alert("Beim Laden ist ein Fehler aufgetreten: " + err);
+                    $("#loading-overlay").hide();
+                }
+            });
+        }
+
+        loadDoc();
+    </script>
+    </body>
+</html>

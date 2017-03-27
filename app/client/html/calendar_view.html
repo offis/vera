@@ -1,0 +1,80 @@
+<html>
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <!--<meta name="viewport" content="width=device-width, initial-scale=1">//-->
+
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/fullcalendar.min.css" />
+        <link rel="stylesheet" href="../css/vera.css" />
+
+
+        <script src="../js/moment-with-locales.min.js"></script>
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/URI.min.js"></script>
+        <script src="../js/vera.js"></script>                        <!--// Vera client logic //-->
+        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/fullcalendar.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.3.1/lang-all.js"></script>
+
+        <title>VERA</title>
+        
+<script type="text/javascript">
+function createCalendar(view) {
+    var calendar = $("#calendar");
+    var now = new Date();
+    calendar.fullCalendar({
+        eventClick: function (calEvent, jsEvent, view) {
+            var uri = new URI("calendar_event.html");
+            uri.addQuery("user", $.vera.user);
+            uri.addQuery("event", calEvent._id);
+            uri.addQuery("referrer", location.href);
+            location.href = uri.href();
+        },
+        events: "/vera_user_" + $.vera.user + "/_design/access/_list/calendar-entries/calendar-by-startdate",
+        loading: function (isLoading, view) {
+            console.log("calendar is loading: " + isLoading + " " + view);
+        },
+        startParam: "start",
+        endParam: "end",
+        slotMinutes: 60,
+        minTime: "07:00:00",
+        maxTime: "23:00:00",
+        eventColor: '#f7c192',
+        eventBorderColor: '#000000',
+        eventTextColor: '#000000',
+        defaultView: view,
+       /*header: {
+            left: 'title',
+            center: '',
+            right: ''
+        },*/
+        ignoreTimezone: false,
+        allDayDefault: false,
+        lang: "de",
+        allDaySlot: false,
+        timezone: "local"
+    });
+
+    $(".fc-header-right").append($("#calendar-buttons"));
+}
+
+$(document).ready(function() {
+    var q = URI.parseQuery(URI.parse(location.href).query);  
+    $.vera.user = q.user;
+    
+    createCalendar(q.view);
+});
+</script>
+</head>
+<body>
+                         <div>
+                            <h1 class="page_content_heading">Mein Kalender</h1>
+                       <!--     <div style="display: table; border-collapse: separate; border-spacing: 5px" id="calendar-buttons">
+                                <div class="content-button calendar-button" onClick="$('#calendar').fullCalendar('today')">Heute</div>
+                                <div class="content-button calendar-button" onClick="$('#calendar').fullCalendar('prev')"> < </div>
+                                <div class="content-button calendar-button" onClick="$('#calendar').fullCalendar('next')"> > </div>
+                            </div>//-->
+                            <div id="calendar"></div>
+                        </div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+    "activity": {
+        "name": "Ausdauer",
+        "description": "<p>Dokumentieren Sie hier, an welchen Tagen in der Woche Sie <ul><li>für mindestens 20 Minuten</li><li>Ihre Ausdauer trainiert haben.</li></ul></p>",
+        "motivation": "Und haben Sie die Empfehlung von 3x pro Woche Ausdauertraining schon erreicht?",
+        "category": "ausdauer"
+    }
+}

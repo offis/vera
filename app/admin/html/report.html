@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Statistische Auswertung von VERA</title>
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script>
+            var num_users = 0;
+            var act_p_month_completed = 0;
+            var act_p_month = {};
+            var clicks_p_hour_completed = 0;
+            var clicks_p_hour = {};
+            var clicks_p_page_completed = 0;
+            var clicks_p_page = {
+                "mypage" : 0,
+                "myhouse" : 0,
+                "myhealth" : 0,
+                "mycalendar" : 0,
+                "internet" : 0,
+                "news" : 0,
+                "page_myhealth_neuronation":0,
+                "page_myhealth_movies":0
+            };
+            var configs  = {}; // User configs
+            var resusers = {};
+
+            $(document).ready(function() {
+
+                // Count number of users
+                $.couch.allDbs({
+                    success: function(dbs) {
+                        var n;
+                        for(n = 0; n < dbs.length; n++) {
+                            if (dbs[n].indexOf("_user_") !== -1) {
+                                
+                                // Check for not-senior user
+                                if (!isValidUser(dbs[n]))
+                                    continue;
+                                
+                                num_users++;
+
+                                $.couch.db(dbs[n]).openDoc("config", {
+                                    success: function(_db) {
+                                        return function (_config) {
+                                            configs[_config.username] = _config;
+                                            resusers[_config.residence] = resusers[_config.residence] !== undefined ? 0 : resusers[_config.residence] + 1;
+                                            getActPMonth(_db, _config);
+                                            getClickPHour(_db, _config);
+                                            getClickPPage(_db, _config);
+                                        };
+                                    }(dbs[n]),
+                                    error: function (err) {
+                                        console.log(err);
+                                    }
+                                });
+                            }
+                        }
+                        $("#num_users").text(num_users);
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                });
+
+            });
+            
+            function isValidUser(userdb) {
+                if (userdb === "vera_user_fsj" ||
+                    userdb.indexOf("lhalder") !== -1 ||
+                    userdb === "vera_user_mabegleitung" ||
+                    userdb.indexOf("_begleitung") !== -1 ||
+                    userdb.indexOf("_freund") !== -1 ||
+                    userdb.indexOf("vera_user_max") !== -1 ||
+                    userdb.indexOf("mmehring") !== -1 ||
+                    userdb.indexOf("_vera") !== -1 ||
+                    userdb === "vera_user_jade1" ||
+                    userdb.indexOf("remberti") !== -1 ||
+                    userdb === "vera_user_riensberg" || 
+                    userdb === "vera_user_sbonjer" ||
+                    userdb.indexOf("bhs") !== -1 ||
+                    userdb.indexOf("bwalterilsa") !== -1 ||
+                    userdb.indexOf("ilsa") !== -1 ||
+                    userdb.indexOf("ideaal") !== -1) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            function getActPMonth(db, config) {
+                if (act_p_month[config.residence] === undefined) {
+                    act_p_month[config.residence] = {};
+                }
+
+                // Get number of activities per month
+                $.getJSON("/" + db + "/_design/report/_list/sum-up-keys/activities-per-month", function(res) {
+                    for(var date in res) {
+                        var entry = act_p_month[config.residence][date];
+                        if (entry === undefined) {
+                            entry = [res[date]];
+                        } else {
+                            entry.push(res[date]);
+                        }
+                        act_p_month[config.residence][date] = entry;
+                    }
+                    act_p_month_completed++;
+                    if (act_p_month_completed == num_users) {
+                        calcActPMonth();
+                    }
+                });
+            }
+
+            function getClickPHour(db, config) {
+                clicks_p_hour[db] = {};
+
+                $.getJSON("/" + db + "/_design/report/_list/sum-up-keys/clicks-per-hour", function(res) {
+                    var n;
+                    for (n = 0; n < 24; n++) {
+                        if(res[n] === undefined) {
+                            clicks_p_hour[db][n] = 0;
+                        } else {
+                            clicks_p_hour[db][n] = res[n];
+                        }
+                    }
+
+                    clicks_p_hour_completed++;
+                    if (clicks_p_hour_completed == num_users) {
+                        calcClickPHour();
+                    }
+                });
+            }
+
+            function getClickPPage(db, config) {
+                $.getJSON("/" + db + "/_design/report/_list/sum-up-pages/clicks-per-page", function(res) {
+                    for(var page in res) {
+                        clicks_p_page[page] += res[page];
+                    }
+
+                    clicks_p_page_completed++;
+                    if (clicks_p_page_completed == num_users) {
+                        calcClickPPage();
+                    }
+                });
+            }
+
+            function calcClickPPage() {
+                var tbody = $("#tbl-clicks-p-page");
+
+                for(var page in clicks_p_page) {
+                    tbody.append($("<tr><td>" + page + "</td><td>" + clicks_p_page[page] + "</td></tr>"));
+                }
+            }
+
+            function calcClickPHour() {
+                var overall = Array.apply(null, new Array(24)).map(Number.prototype.valueOf,0);;
+                var thead = $("#tbl-clicks-p-hour");
+
+                for (var user in clicks_p_hour) {
+                    var resid = configs[user.split("_")[2]].residence;
+                    var tbody = $("#tbl-click_p_hour_" + resid);
+                    if(tbody.get(0) === undefined) {
+                        tbody = $("<tbody id='tbl-click_p_hour_" + resid + "'></tbody>");
+                        thead.parent().append(tbody);
+                    }
+
+                    var tr = $("<tr></tr>");
+                    tr.append($("<td>" + user + " (" + resid + ")</td>"));
+
+                    for (var n = 0; n < 24; n++) {
+                        tr.append($("<td class='hour_" + n + "'>" + clicks_p_hour[user][n] + "</td>"));
+                        overall[n] += clicks_p_hour[user][n];
+                    }
+
+                    tbody.append(tr);
+                }
+
+                tbody = $("<tbody></tbody>");
+                thead.parent().append(tbody);
+                tr = $("<tr></tr>");
+                tr.append("<td>Gesamt</td>");
+                for(n = 0; n < 24; n++) {
+                    tr.append($("<td class='hour_" + n + "'>" + overall[n] + "</td>"));
+                }
+                tbody.append(tr);
+            }
+
+            function calcActPMonth() {
+                // Calculate average
+                var tbl = $("#tbl-act-p-month");
+                for (var res in act_p_month) {
+                    for(var date in act_p_month[res]) {
+                        var tr = $("<tr></tr>");
+                        var td = $("<td>" + res + "</td>"); // Standort-Spalte
+                        tr.append(td);
+
+                        td = $("<td>" + date + "</td>");    // Zeitraum-Spalte
+                        tr.append(td);
+
+                        var sum_el = 0;
+                        for(var n = 0; n < act_p_month[res][date].length; n++) {
+                            sum_el += act_p_month[res][date][n];
+                        }
+
+                        td = $("<td>" + sum_el + "</td>");   // Anzahl protokollierter Aktivitäten
+                        tr.append(td);
+
+                        td = $("<td>" + resusers[res] + "</td>"); // Anzahl Protokollanten (total)
+                        tr.append(td);
+
+                        td = $("<td>" + act_p_month[res][date].length + "</td>"); // Anzahl Protokollanten mit Act. > 0
+                        tr.append(td);
+
+                        var average = sum_el / resusers[res];
+                        var covariance = 0;
+                        for(var n = 0; n < act_p_month[res][date].length; n++) {
+                            covariance += Math.pow(average - act_p_month[res][date][n], 2);
+                        }
+                        for (n = 0; n < (resusers[res] - act_p_month[res][date].length); n++) {
+                            covariance += Math.pow(average - 0, 2);
+                        }
+                        covariance /=  (resusers[res] - 1);
+
+                        td = $("<td>" + Math.round(average, 1) + "</td>");
+                        tr.append(td);
+
+                        td = $("<td>" + Math.round(Math.sqrt(covariance), 3) + "</td>");
+                        tr.append(td);
+
+                        tbl.append(tr);
+                    }
+                }
+            }
+        </script>
+
+        <style type="text/css">
+            table {
+                border: 1px solid black;
+            }
+
+            thead {
+                background-color: #eeeeee;
+            }
+
+            tr, td {
+                border: 1px dotted black;
+            }
+
+            td.hour_10, td.hour_11 {
+                background-color: #FF8888;
+            },
+            #tbl-click_p_hour_1, #tbl-click_p_hour_2 {
+                background-color: : #AAFFAA;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Statistische Auswertung von VERA</h1>
+        <h2>Nutzer</h2>
+        Anzahl registrierter Benutzeraccounts: <span id="num_users"></span>
+
+        <h2>Aktivitäten</h2>
+        <h3>Anzahl protokollierter Aktivitäten</h3>
+        <table>
+            <thead>
+                <tr>
+                    <td>Standort</td>
+                    <td>Monat</td>
+                    <td># protokollierte Aktivitäten</td>
+                    <td># Protokollanten (Total)</td>
+                    <td># Protokollanten (User mit > 0 protokollierten Aktivitäten)</td>
+                    <td>Durchschnitt # protokollierte Aktivitäten</td>
+                    <td>Stichprobenstandardabweichung</td>
+                </tr>
+            </thead>
+            <tbody id="tbl-act-p-month">
+            </tbody>
+        </table>
+
+        <h2>Nutzung</h2>
+        <h3>Nutzung im Verlauf des Tages</h3>
+        <table>
+            <thead id="tbl-clicks-p-hour">
+                <tr>
+                    <td>Nutzer</td>
+                    <td>0-1 Uhr</td>
+                    <td>1-2 Uhr</td>
+                    <td>2-3 Uhr</td>
+                    <td>3-4 Uhr</td>
+                    <td>4-5 Uhr</td>
+                    <td>5-6 Uhr</td>
+                    <td>6-7 Uhr</td>
+                    <td>7-8 Uhr</td>
+                    <td>8-9 Uhr</td>
+                    <td>9-10 Uhr</td>
+                    <td>10-11 Uhr</td>
+                    <td>11-12 Uhr</td>
+                    <td>12-13 Uhr</td>
+                    <td>13-14 Uhr</td>
+                    <td>14-15 Uhr</td>
+                    <td>15-16 Uhr</td>
+                    <td>16-17 Uhr</td>
+                    <td>17-18 Uhr</td>
+                    <td>18-19 Uhr</td>
+                    <td>19-20 Uhr</td>
+                    <td>20-21 Uhr</td>
+                    <td>21-22 Uhr</td>
+                    <td>22-23 Uhr</td>
+                    <td>23-24 Uhr</td>
+                </tr>
+            </thead>
+        </table>
+
+        <h3>Nutzung der Kategorien</h3>
+        <table>
+            <thead>
+                <tr>
+                    <td>Kategorie</td>
+                    <td>Klicks</td>
+                </tr>
+            </thead>
+            <tbody id="tbl-clicks-p-page">
+            </tbody>
+        </table>
+
+    </body>
+</html>

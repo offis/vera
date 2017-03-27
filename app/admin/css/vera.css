@@ -1,0 +1,45 @@
+body {
+	font-family: 'Titillium Web', sans-serif;
+	padding: 50px;
+	padding-top: 25px;
+}
+
+.delete-house-button {
+	margin-left: 2em;
+}
+
+input.movie {
+	min-width: 300px;
+}
+
+#tabs {
+	width: 900px;
+}
+
+.establishment {
+	border: 1px solid gray;
+	background-color: #cccccc;
+	padding: 5px;
+}
+
+.employee {
+	border: 1px solid gray;
+	background-color: #cccccc;
+	padding: 5px;
+}
+
+.user {
+	border: 1px solid gray;
+	background-color: #cccccc;
+	padding: 5px;
+}
+
+.ui-widget {
+	font-family: 'Titillium Web', sans-serif;
+}
+
+.ui-widget button {
+	font-family: 'Titillium Web', sans-serif;
+}
+
+

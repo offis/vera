@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Vera Administration</title>
+        <link rel="icon" href="../img/bhslogo.png">
+
+        <link rel="stylesheet" href="../css/jquery-ui.css" />
+        <link rel="stylesheet" href="../css/vera.css" />
+        <link href='//fonts.googleapis.com/css?family=Titillium+Web:400,400italic,700&amp;subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+        
+        <script src="../js/callchain.js"></script>
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/jquery-ui.min.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script src="../js/jquery-ui-timepicker-addon.js"></script>
+        <script src="../js/vera.js"></script>
+        <script src="../js/ufeed.js"></script>
+        <script src="/feed/view/iaknrqumr1hmf4r6/js"></script>       <!--// Buchrezensionen //-->
+        <script type="application/javascript">
+            function deleteBook(id) {
+                var url = "/feed/iaknrqumr1hmf4r6/" + $("#admin-token").val() + "/entry/" + id;
+                $.ajax({
+                    url: url,
+                    type: 'DELETE',
+                    success: function(result) {
+                        alert("Gelöscht!");
+                        updateBooksList();
+                    }
+                });
+            }
+
+            function updateBooksList() {
+                var bi = $("#books-insertpoint");
+                bi.empty();
+
+                var len = ufeed_iaknrqumr1hmf4r6.length;
+                var ul = $("<ul></ul>");
+                for(var n = 0; n < len; n++) {
+                    var book = ufeed_iaknrqumr1hmf4r6[n];
+                    ul.append("<li>" + book.title + " (<a href='#' onclick='deleteBook(\"" + book.id + "\")'>Löschen</a>)</li>");
+                }
+                bi.append(ul);
+            }
+
+            function updateBHSBlogList() {
+                var bi = $("#bhsblog-insertpoint");
+
+                var len = ufeed_gkw2ztdbcxxcz190.length;
+                var ul = $("<ul></ul>");
+                for(var n = 0; n < len; n++) {
+                    var entry = ufeed_gkw2ztdbcxxcz190[n];
+                    ul.append("<li>" + entry.title + " (<a href='#' onclick='deleteEntry(\"" + entry.id + "\")'>Löschen</a>)</li>");
+                }
+                bi.append(ul);         
+            }
+
+            $(document).ready(function() {
+
+                $.getScript("/feed/view/iaknrqumr1hmf4r6/js", updateBooksList);
+
+                $("#post-form-1").submit(function(event) {
+                    event.preventDefault();
+                    var doc = {
+                        "post-title": $("#entry-title").val(),
+                        "post-text": $("#entry-text").val(),
+                        "post-link": $("#entry-text").val(),
+                        "date": $("#entry-date").val()
+                    };
+                    $.ufeed.updatePost(doc, $("#_id").val(), $("#_rev").val(), "iaknrqumr1hmf4r6", $("#admin-token").val(), $("#entry-file").get(0), $("#entry-img").get(0), {
+                        success: function() {
+                            $.getScript("/feed/view/iaknrqumr1hmf4r6/js", updateBooksList);
+                            alert("Buchrezension erfolgreich erstellt!");
+                            $("#_rev").val("");
+                            $("#_id").val("");
+                            $("#entry-title").val("");
+                            $("#entry-text").val("");
+                            $("#entry-file").val("");
+                            $("#entry-img").val("");
+                            $("#entry-date").val(new Date().toISOString());
+                        },
+                        error: function() {
+                            alert("Es ist ein Fehler aufgetreten!");
+                        }
+                    });
+                });
+
+                $("#post-form-2").submit(function(event) {
+                    event.preventDefault();
+                    var doc = {
+                        "post-title": $("#bhsblog-entry-title").val(),
+                        "post-text": $("#bhsblog-entry-text").val(),
+                        "post-link": $("#bhsblog-entry-text").val(),
+                        "date": $("#bhsblog-entry-date").val()
+                    };
+                    $.ufeed.updatePost(doc, $("#bhsblog-_id").val(), $("#bhsblog-_rev").val(), "gkw2ztdbcxxcz190", $("#bhsblog-admin-token").val(), $("#bhsblog-entry-file").get(0), undefined, {
+                        success: function() {
+                            $.getScript("/feed/view/gkw2ztdbcxxcz190/js", updateBHSBlogList);
+                            alert("Eintrag erstellt!");
+                            $("#bhsblog-_rev").val("");
+                            $("#bhsblog-_id").val("");
+                            $("#bhsblog-entry-title").val("");
+                            $("#bhsblog-entry-text").val("");
+                            $("#bhsblog-entry-file").val("");
+                            $("#bhsblog-entry-img").val("");
+                            $("#bhsblog-entry-date").val(new Date().toISOString());
+                        },
+                        error: function() {
+                            alert("Es ist ein Fehler aufgetreten!");
+                        }
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Vera Administration</h1>
+        <div id="tabs">
+            <ul>
+                <li>
+                    <a href="#tabs-1">Einrichtungen</a>
+                </li>
+                <li>
+                    <a href="#tabs-2">Mitarbeiter</a>
+                </li>
+                <li>
+                    <a href="#tabs-3">Benutzer</a>
+                </li>
+                <li>
+                    <a href="#tabs-4">Dies &amp; Das</a>
+                </li>
+                <li>
+                    <a href="#tabs-5">Bewegungsfilme</a>
+                </li>
+                <li>
+                    <a href="#tabs-6">BHS-Blog</a>
+                </li>
+            </ul>
+            <div id="tabs-1">
+                <button id="new-house-button">Neue Einrichtung</button>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Name</td>
+                            <td>Aktion</td>
+                        </tr>
+                    </thead>
+                    <tbody id="tabs-1-insertpoint">
+
+                    </tbody>
+                </table>                
+            </div>
+            <div id="tabs-2">
+                <button id="new-employee-button">Neuer Mitarbeiter</button>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Name</td>
+                            <td>Haus</td>
+                        </tr>
+                    </thead>
+                    <tbody id="tabs-2-insertpoint">
+
+                    </tbody>
+                </table>
+
+                <div id="employees-accordion" style="display: none">
+
+                </div>
+            </div>
+            <div id="tabs-3">
+                <button id="new-user-button">Neuer Benutzer</button>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Name</td>
+                            <td>Benutzername</td>
+                            <td>Haus</td>
+                            <td>Aktionen</td>
+                        </tr>
+                    </thead>
+                    <tbody id="tabs-3-insertpoint">
+
+                    </tbody>
+                </table>
+            </div>
+            <div id="tabs-4">
+                
+                <table>
+                    <tr><td style="border-right: 1px solid gray">
+                        <h3>Neuer Eintrag</h3>
+                <form class="form-horizontal" role="form" id="post-form-1">
+                    <input type="hidden" id="public-token" value="iaknrqumr1hmf4r6" />
+                    <input type="hidden" id="admin-token" value="O74OXIcmqCQ2Al343FAddSOv3oW39vRATzfqnm3xaO" />
+                    <input type="hidden" id="_rev" value="" />
+                    <input type="hidden" id="_id" value="" />
+                    <div class="form-group">
+                        <label for="entry-title" class="col-sm-2 control-label">Titel</label>
+                        <div>
+                            <input type="text" id="entry-title" placeholder="Titel der Buchempfehlung" style="width: 300px"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-text" class="col-sm-2 control-label">Kurztext</label>
+                        <div class="col-sm-10">
+                            <textarea id="entry-text" placeholder="" style="width: 300px; height: 200px"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-file" class="col-sm-2 control-label">PDF-Dokument</label>
+                        <div class="col-sm-10">
+                            <input type="file" class="form-control" id="entry-file" placeholder="PDF-Dokument mit der kompletten Buchempfehlung" style="height: auto" accept="application/pdf" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-img" class="col-sm-2 control-label">Vorschaubild</label>
+                        <div class="col-sm-10">
+                            <input type="file" class="form-control" id="entry-img" placeholder="Vorschaubild der Buchrezension" style="height: auto" accept="image/*" />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="entry-date">Veröffentlichungsdatum</label>
+                        <div>
+                            <input type="text" class="form-control" id="entry-date"  style="width: 300px"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 1em">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-default">Erstellen</button>
+                        </div>
+                  </div>
+            </form>
+            </td>
+            <td valign="top">
+                <h3>Vorhandene Einträge</h3>
+                <div id="books-insertpoint"></div>
+            </td>
+        </tr>
+    </table>
+        </div>
+
+
+        <div id="tabs-5">
+            <h2>Bewegungsfilme verwalten</h2>
+
+            <div id="movie-edit">
+                <table>
+                    <tr>
+                        <td>Title des Films</td>
+                        <td><input type="text" class="movie" id="movie-title" placeholder="z. B. Bewegungsfilm 'Kraft'" />
+                    </tr>
+                    <tr>
+                        <td>URL des Vorschaubildes<br/>http://www.bhs-vera.de/video/</td>
+                        <td><input type="text" class="movie" id="movie-img" placeholder="film_kraft.jpg" /></td>
+                    </tr>
+                    <tr>
+                        <td>URL des Films</td>
+                        <td><input type="text" class="movie" id="movie-url" placeholder="film_kraft_1k.mp4" /></td>
+                    </tr>
+                    <tr>
+                        <td>Priorität/Reihenfolge (aufsteigend)</td>
+                        <td><input type="number" class="movie" id="movie-prio" value="1" /></td>
+                    </tr>
+                </table>
+                <button id="movie-create">Neuen Bewegungsfilm anlegen</button>
+            </div>
+            <hr noshade="noshade" />
+            <div id="movie-insertpoint">
+
+            </div>
+        </div>
+
+        <div id="tabs-6">
+            <h2>BHS-Blog</h2>
+
+            Hier können Neuigkeiten und wissenswerte Artikel rund um die Bremer Heimstiftung eingestellt werden.
+            Die Artikel sind dann auf den Tablets aller Häuser sichtbar.
+
+            <table>
+                <tr>
+                    <td style="border-right: 1px solid gray">
+                        <h3>Neuer Eintrag</h3>
+                        <form class="form-horizontal" role="form" id="post-form-2">
+                            <input type="hidden" id="bhsblog-public-token" value="gkw2ztdbcxxcz190" />
+                            <input type="hidden" id="bhsblog-admin-token" value="O74OXIcmqCQ2Al343FAddSOv3oW39vRATzfqnm3xaO" />
+                            <input type="hidden" id="bhsblog-_rev" value="" />
+                            <input type="hidden" id="bhsblog-_id" value="" />
+                            <div class="form-group">
+                                <label for="bhsblog-entry-title">Titel</label>
+                                <input type="text" id="bhsblog-entry-title" placeholder="Titel" style="width: 300px"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="bhsblog-entry-text">Text</label>
+                                <textarea id="bhsblog-entry-text" style="width: 300px; height: 200px"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="bhsblog-entry-file">PDF-Dokument</label>
+                                <input type="file" class="form-control" id="bhsblog-entry-file" placeholder="PDF-Dokument" style="height: auto" accept="application/pdf" />
+                            </div>
+                            <div>
+                                <label for="bhsblog-entry-date">Veröffentlichungsdatum</label>
+                                <input type="text" class="form-control" id="bhsblog-entry-date"  style="width: 300px"/>
+                            </div>
+                            <div class="form-group" style="margin-top: 1em">
+                                <button type="submit" class="btn btn-default">Erstellen</button>
+                            </div>
+                        </form>
+                    </td>
+                    <td valign="top">
+                        <h3>Vorhandene Einträge</h3>
+                        <div id="bhsblog-insertpoint"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+        
+        <div id="new-house-dialog">
+            <table>
+                <tr>
+                    <td>Name der Einrichtung:</td>
+                    <td><input type="text" id="house-name"></input></td>
+                </tr>
+                <!--//<tr>
+                    <td>Bild der Einrichtung:</td>
+                    <td><input type="text" id="house-image" placeholder="http://"></input></td>
+                </tr>//-->
+            </table>
+        </div>
+
+        <div id="new-user-dialog" title="Neuer Benutzer">
+            <table>
+                <tr>
+                    <td>Anrede:</td>
+                    <td><input type="text" id="salutation" /></td>
+                </tr>
+                <tr>
+                    <td>Vorname:</td>
+                    <td><input type="text" id="firstname" /></td>
+                </tr>
+                <tr>
+                    <td>Nachname:</td>
+                    <td><input type="text" id="lastname" /></td>
+                </tr>
+                <tr>
+                    <td>Geburtsdatum (TT.MM.JJJJ):</td>
+                    <td><input type="text" id="birthdate" /></td>
+                </tr>
+                <tr>
+                    <td>Einrichtung:</td>
+                    <td><select id="residences-option-user" class="residences-option"></select></td>
+                </tr>
+                <tr>
+                    <td>Benutzername:</td>
+                    <td><input type="text" id="username" /></td>
+                </tr>
+                <tr>
+                    <td>Passwort:</td>
+                    <td><input type="text" id="password" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="new-employee-dialog" title="Neue Mitarbeiterin">
+            <table>
+                <tr>
+                    <td>Name:</td>
+                    <td><input type="text" id="employee-name" /></td>
+                </tr>
+                <tr>
+                    <td>Einrichtung:</td>
+                    <td><select class="residences-option" id="residences-option-employee"></select></td>
+                </tr>
+                <tr>
+                    <td>Benutzername:</td>
+                    <td><input type="text" id="employee-login" /></td>
+                </tr>
+                <tr>
+                    <td>Passwort:</td>
+                    <td><input type="text" id="employee-password" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="edit-employee-dialog" title="Mitarbeiterin bearbeiten">
+            <table>
+                <tr>
+                    <td>Name:</td>
+                    <td><input type="text" id="edit-employee-name" /></td>
+                </tr>
+                <tr>
+                    <td>Benutzername:</td>
+                    <td><input type="text" id="edit-employee-login" readonly/></td>
+                </tr>
+                <tr>
+                    <td>Neues Password:</td>
+                    <td><input type="text" id="edit-employee-password" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="edit-user-dialog" title="Benutzer bearbeiten">
+            <table>
+                <tr>
+                    <td>Anrede:</td>
+                    <td><input type="text" id="edit-user-salutation" /></td>
+                </tr>
+                <tr>
+                    <td>Vorname:</td>
+                    <td><input type="text" id="edit-user-firstname" /></td>
+                </tr>
+                <tr>
+                    <td>Nachname:</td>
+                    <td><input type="text" id="edit-user-lastname" /></td>
+                </tr>
+                <tr>
+                    <td>Geburtsdatum (TT.MM.JJJJ):</td>
+                    <td><input type="text" id="edit-user-birthdate" /></td>
+                </tr>
+                <tr style="display: none">
+                    <td>Einrichtung:</td>
+                    <td><select id="edit-user-residences_option"></select></td>
+                </tr>
+                <tr>
+                    <td>Benutzername:</td>
+                    <td><input type="text" id="edit-user-username" readonly/></td>
+                </tr>
+                <tr>
+                    <td>Passwort:</td>
+                    <td><input type="text" id="edit-user-password" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="new-user-created-dialog" title="Benutzerverwaltung">
+            Der neue Benutzer wurde angelegt.
+        </div>
+
+        <div id="error-dialog" title="Verwaltung">
+            <span id="error-message">
+                Es trat ein unbekannter Fehler auf!<br/>
+                Bitte wenden Sie sich an Ihren Systemadministrator!
+            </span>
+        </div>
+
+        <div id="info-dialog" title="Verwaltung">
+            <span id="info-message">
+                Dies ist eine Information!
+            </span>
+        </div>
+        
+        <div id="delete-house-dialog" title="Einrichtung löschen?">
+            <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                Soll die Einrichtung <span id="house-for-deletion"></span> wirklich entfernt werden?
+            </p>
+        </div>
+
+        <div id="delete-user-dialog" title="Benutzer löschen?">
+            <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                Soll der Benutzer <span id="user-for-deletion"></span> wirklich entfernt werden?
+            </p>
+        </div>
+
+	<div id="delete-employee-dialog" title="Mitarbeiterin löschen?">
+		<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+			Soll die Mitarbeiterin <span id="employee-for-deletion"></span> wirklich entfernt werden?
+		</p>
+	</div>
+    </body>
+</html>

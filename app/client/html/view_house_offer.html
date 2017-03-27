@@ -1,0 +1,275 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="icon" href="../img/bhslogo.png">
+
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <link rel="stylesheet" type="text/css" href="../css/vera.css" />
+
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script src="../js/purl.js"></script>
+        <script src="../js/moment-with-locales.min.js"></script>
+        <style>
+        body {
+            font-size: 14pt;
+            padding: 0em;
+            margin: 0px;
+        }
+        .cp-evt-to-usr-button {
+            font-size: 14pt;
+            background : #ed7c12 !important;
+        }
+        .event-table {
+            position: absolute;
+            bottom: 0;
+            background-color: white;
+            font-size: 16pt;
+            width: 100%;
+        }
+        .event-table-head {
+            background-color: #4f81bd;
+            color: white;
+            font-weight: bold;
+        }
+        .event-table-row {
+            background-color: #d0d8e8;
+        }
+        .event-table-cell {
+            border: 1px solid white;
+        }
+        #image_placeholder {
+            border: 0px solid black;
+            width: 500px;
+            height: 375px;
+        }
+        #edit-title {
+            font-size: 50pt;
+            border: 0px;
+        }
+        .description {
+            border: 0px dotted gray;
+            font-size: 20pt;
+            overflow: hidden;
+        }
+        #tablet {
+            border: 5px solid black;
+            display: none;
+            margin: 0.9em;
+            overflow: hidden;
+            position: relative;
+            height: 725px !important;
+        }
+        #notification {
+            font-color: orange;
+        }
+        </style>
+    </head>
+    <body>
+    <div id="loading-overlay"><img src="../img/loading.gif" style="margin: 30%"></div>
+    <div id="tablet">
+        <div id="edit-title">
+            <span>Titel des Angebots</span>
+        </div>
+        <table style="width: 100%">
+            <tr>
+            <td style="width: 500px; height: 375px; vertical-align: top">
+                <div id="edit-desc-1" class="description">
+                <span>
+                </span>
+                </div>
+            </td>
+            <td style="width: 500px; height: 375px; vertical-align: top">
+            <div id="image_placeholder">
+            </div>
+            </td>
+            </tr>
+        </table>
+        <div id="edit-desc-2" class="description">
+        <span>
+        </span>
+        </div>
+        <table class="event-table">
+            <thead class="event-table-head">
+                <tr>
+                    <td>Wann?</td>
+                    <td>Wo?</td>
+                    <td>Ansprechpartner</td>
+                    <td>Aktion</td>
+                </tr>
+            </thead>
+            <tbody id="event-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+        var url = $.url();
+        var id  = url.param("id");
+        var rid = url.param("rid");
+        var uid = url.param("uid");
+        var db = "vera_residence_" + rid;
+
+        function loadDoc() {
+            $.couch.db(db).openDoc(id, {
+                success: function(doc) {
+                    rev = doc._rev;
+
+                    try {
+                        $("#edit-title").html($(doc.title));
+                    } catch(err) {
+                        $("#edit-title").html($("<span>" + doc.title + "</span>"));
+                    }
+
+                    if(doc["desc-1"] !== undefined) {
+                        $("#edit-desc-1").html($(doc["desc-1"]));
+                    }
+
+                    if(doc["desc-2"] !== undefined) {
+                        $("#edit-desc-2").html($(doc["desc-2"]));
+                    }
+
+                    if(doc["img-0"] !== undefined) {
+                        var preview = document.getElementById('image_placeholder');
+                        preview.style.background =  doc["img-0"];
+                        $("#image_placeholder").css("background-size", "500px 375px");
+                    }
+
+                },
+                error: function(err) {
+                    alert("Beim Laden ist ein Fehler aufgetreten: " + err);
+                }
+            });
+        }
+
+        function formatTime(date) {
+            return moment(date).format("HH:mm");
+        }
+
+        function formatTimeStr(date0, date1) {
+            return " von " + formatTime(date0) + " bis " + formatTime(date1) + " Uhr";
+        }
+
+        function dayOfMonth(date) {
+            var mom = moment(date);
+            var first = mom.date() % 7;
+            var occ = 1;
+            while (first != mom.date()) {
+                occ++;
+                first += 7;
+            }
+            return occ;
+        }
+
+        function eventToString(event) {
+            var days7 = ["Sonntags", "Montags", "Dienstags", "Mittwochs", "Donnerstags", "Freitags", "Samstags"];
+            var days  = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+            var date0 = new Date(event.start);
+            var date1 = new Date(event.end);
+            var str;
+
+            // Switch moment to german locale globally
+            moment.locale("de");
+
+            switch(event.recurrence) {
+                case "1": {
+                    str = "Täglich" + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "7": {
+                    str = days7[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "14" : {
+                    str = "14-täglich immer am " + days[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "21" : {
+                    str = "Jeden 3. " + days[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "28" : {
+                    str = "Jeden 4. " + days[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "1M" : {
+                    str = "Monatlich am " + dayOfMonth(date0) + ". " + days[date0.getDay()] + " im Monat " + formatTimeStr(date0, date1);
+                    break;
+                }
+                default: {
+                    str = "Am " + moment(date0).format("LL") + formatTimeStr(date0, date1);
+                }
+            }
+
+            return str;
+        }
+
+        function insertEvent(event) {
+            var tr = $("<tr class='event-table-row'></td>");
+            $("#event-table-body").append(tr);
+            tr.append($("<td style='cursor: pointer' class='event-table-cell' onclick='openEventEditor(\"" + event._id + "\")'>" + eventToString(event) + "</td>"));
+            tr.append($("<td class='event-table-cell'>" + event.location+ "</td>"));
+            tr.append($("<td class='event-table-cell'>" + event.contact + "</td>"));
+            tr.append($("<td class='event-table-cell'><button class='cp-evt-to-usr-button' data-event='" + event._id + "'>In den Kalender</button></td>"));
+        }
+
+        function copyEventToUser(id) {
+            $.couch.db(db).openDoc(id, {
+                success: function (event) {
+                    delete event._rev;
+                    $.couch.db("vera_user_" + uid).saveDoc(event, {
+                        success: function (ret) {
+                            $(".cp-evt-to-usr-button[data-event='" + ret.id + "']").attr("disabled", "disabled");
+                        },
+                        error: function (err) {
+                            console.log("copyEventToUser: " + err);
+                            if (err === 409) {
+                                alert("Sie haben diesen Termin schon in Ihrem Kalender!");
+                                $(".cp-evt-to-usr-button[data-event='" + event._id + "']").button("disable");
+                            }
+                        }
+                    });
+                },
+                error: function (err) {
+                    console.log("copyEventToUser: " + err);
+                }
+            });
+        }
+
+        function loadEvents() {
+            $("#event-table-body").empty();
+
+            $.couch.db(db).view("access/calendar-by-houseoffer", {
+                key: id,
+                success: function (data) {
+                    var n;
+                    for(n = 0; n < data.rows.length; n++) {
+                        var event = data.rows[n].value;
+                        insertEvent(event);
+                    }
+                    if (data.rows.length === 0) {
+                        $(".event-table").css("display", "none");
+                    } else {
+                        $(".cp-evt-to-usr-button").click(function(evt) {
+                            copyEventToUser($(evt.target).attr("data-event"));
+                        });
+                    }
+
+                    $("#tablet").show();
+                    $("#loading-overlay").hide();
+                },
+                error: function (err) {
+                    $(".event-table").css("display", "none");
+                    $("#loading-overlay").hide();
+                }
+            });
+        }
+
+        loadDoc();
+        loadEvents();
+    </script>
+    </body>
+</html>

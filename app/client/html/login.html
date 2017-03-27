@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="../css/vera.css" />
+        <script src="../js/jquery-2.1.0.min.js"></script>
+	    <script src="../js/json2.js"></script>
+	    <script src="../js/sha1.js"></script>
+	    <script src="../js/jquery.couch.js"></script>
+	    <script src="../js/purl.js"></script>
+		<script src="../js/vera.js"></script>
+		<script>
+			function doVeraLogin() {
+				window.location = "index.html";
+			}
+
+			function doNeuroNationLogin() {
+				var vera_user = $("#login_username").val();
+				$.couch.db("vera_user_" + vera_user).openDoc("neuronation", {
+					success: function(nn) {
+						startNeuroNation(nn.neuronation.uid, nn.neuronation.password, vera_user, 0);
+					},
+					error: function(status) {
+						if(status == 404) {
+							// New NN user
+							startNeuroNation("0", "0", vera_user, 0);
+						} else {
+							showError(status);
+						}
+					}
+				});
+			}
+
+			function startNeuroNation(uid, pw, vera_uid, points_day) {
+				window.location = "neuronation://{\"nn_uid\":\"" + uid + "\", \"nn_pw\":\"" + pw + "\", \"vera_id\":\"" + vera_uid + "\", \"points_day\":\"" + points_day + "\"}";
+			}
+
+			function showError(status) {
+				console.log(status);
+				$("#login_failed_message").show();
+			}
+
+			$(document).ready(function() {    
+			    $("#loginButton").on("click", function() {
+			    	$("#loginButton").addClass("button-onclick");
+			        $.couch.login({
+			            name: $("#login_username").val(),
+			            password: $("#login_password").val(),
+			            success: function(data) {
+			                var url = $.url();
+			                if(url.param("neuronation") !== undefined) {
+			                	doNeuroNationLogin();
+			        		} else {
+			        			doVeraLogin();
+			        		}
+			            },
+			            error: function(status) {
+			                showError(status);
+			                $("#loginButton").removeClass("button-onclick");
+			            }
+			        });
+			    });
+			});
+		</script>
+		<style>
+			input[type="text"] {
+				border: 3px solid black;
+				border-radius: 10px;
+				font-size: 26pt;
+				padding: 10px;
+				width: 300px;
+			}
+
+			input[type="text"]:focus {
+				box-shadow: 0 0 50px 20px #ed7c12;
+				z-index: 100;
+			}
+
+			.button-onclick {
+				background-color: #ed7c12;
+			}
+		</style>
+		<title>VERA</title>
+    </head>
+    <body style="background-color: gray">
+    	<div data-role="page">
+	    	<div id="loginDialog" style="margin-left: 10%; margin-right: 10%; border-radius: 30px; border: 2px solid black; padding: 30px; background-color: white">
+	    		<img src="../img/bhs-logo.png" style="float: right; height: 190px" />
+	    		<h1>Anmelden bei VERA</h1>
+	    		<p>Bitte geben Sie hier Ihre Zugangsdaten ein:</p>
+	    		<table style="border: 0px; width: 95%;">
+	    			<tr>
+	    				<td>Benutzername: </td>
+	    				<td>
+	    					<input id="login_username" type="text" name="login" />
+	    				</td>
+	    				<td rowspan="2">
+	    					<div id="loginButton" class="content-button" style="font-size: 22pt; margin-left: 22pt">Anmelden</div>
+	    				</td>
+	    			</tr>
+	    			<tr>
+	    				<td>Passwort: </td>
+	    				<td>
+	    					<input id="login_password" type="text" name="password" />
+	    				</td>
+	    			</tr>
+	    		</table>
+	    			
+	    		<div style="display: none; border-radius: 20px; background-color: #ff3333; color: white; padding: 10px" id="login_failed_message">
+	    			Die Anmeldung bei VERA war leider nicht erfolgreich!
+	    		</div>
+	    	</div>
+	    </div>
+    </body>
+</html>

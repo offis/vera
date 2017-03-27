@@ -1,0 +1,416 @@
+body {
+	font-size: 1.7em;
+	font-family: 'Roboto', sans-serif;
+    font-stretch: wider;
+}
+
+input[type="text"] {
+    border: 3px solid black;
+    border-radius: 10px;
+    font-size: 26pt;
+    padding: 0.3em;
+}
+
+input[type="text"]:focus {
+    box-shadow: 0 0 50px 20px #ed7c12;
+    z-index: 100;
+}
+
+textarea:focus {
+    box-shadow: 0 0 50px 20px #ed7c12;
+    z-index: 100;
+}
+
+.button-onclick {
+    background-color: #ed7c12 !important;
+}
+
+div.leftmenubutton  {
+	height: 58px;
+}
+
+.link-table {
+    border: 3px solid black;
+    display: table;
+    margin: 0.5em;
+    width: 90%;
+}
+
+.link-table-cell {
+    display: table-cell;
+    max-width: 100%;
+    padding: 0.5em;
+}
+
+td.activity-day {
+	border: 6px solid red; 
+	padding: 1.4em;
+    margin: 1em;
+    font-weight: bold;
+}
+
+td.activity-day-selected {
+	background-color: #99FF66;
+}
+
+td.fatbutton {
+    /*background-color: #acd2f5;*/
+    border: 6px solid #526a85;
+    cursor: pointer;
+    text-align: center;
+	padding: 0.4em;
+	color: white;
+}
+
+td.smallbutton {
+	cursor: pointer;
+	height: 90px;
+	color: white;
+    border: 6px solid #526a85;
+    text-align: center;
+    vertical-align: middle;
+	padding: 0.3em;
+}
+
+td.page_content {
+	padding-left: 50px; 
+	padding-top: 5px;
+	vertical-align: top;
+	height: 600px;
+}
+
+td.page_menu {
+	background-color: #acd2f5;
+    border: 3px solid #526a85;
+	width: 270px;
+	padding: 20px;
+	/*max-height: 80%;*/
+	vertical-align: top;
+}
+
+tr.book {
+    border: 2px solid #385c80
+}
+
+td.book {
+    padding: 6px;
+}
+
+h1.page_content_heading {
+	margin-top: 0px;
+	margin-bottom: 20px;
+}
+
+img.feed-entry {
+	width: 100px;
+	float: left;
+	padding: 5px;
+}
+
+img.book {
+    max-width: 180px
+}
+
+div.feed-entry {
+    border: 4px dotted gray;
+    margin-bottom: 1em;
+    padding: 0.5em;
+}
+
+.page_table {
+	border: 0px; 
+	width: 94%;
+	height: 91%;
+	margin: 3%;
+	margin-bottom: 6%;
+}
+
+.page_content_panel {
+	height: 600px;
+	overflow: auto;
+}
+
+.page-content-center-middle {
+    height: 60%;
+    width: 95%;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.quad {
+	width: 5em;
+	margin-bottom: 20px;
+}
+
+.bluegradback {
+	background: #068fbb; /* Old browsers */
+	background: -moz-linear-gradient(top, #068fbb 0%, #2989d8 51%, #014687 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#068fbb), color-stop(51%,#2989d8), color-stop(100%,#014687)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #068fbb 0%,#2989d8 51%,#014687 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #068fbb 0%,#2989d8 51%,#014687 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #068fbb 0%,#2989d8 51%,#014687 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #068fbb 0%,#2989d8 51%,#014687 100%); /* W3C */
+}
+
+.img-cell {
+    width: 50%;
+}
+
+.img-cell img {
+    width: 100%;
+}
+
+.eventstable {
+    border: 3px solid #FF9900;
+    border-collapse: collapse;
+    background-color: #FFCC99;
+    width: 95%;
+}
+
+.eventstable th {
+    background-color: blue;
+    color: white;
+    font-size: 200%;
+    font-weight: bold;
+    border: 0px;
+}
+
+.eventstable td {
+    text-align: center;
+    border: 2px solid orange;
+    font-weight: bold;
+    font-size: 120%;
+}
+
+.eventstable tr:nth-child(even) {
+    background-color: white;
+}
+
+.halfcell {
+    width: 50%;
+    height: 70px;
+}
+
+.has-no-click-target {
+    /*background-color: #E8E8E8;*/
+    color: #C8C8C8;
+}
+
+/* fullCalendar overrides */
+.fc-axis {
+    background-color: #f89748;
+}
+
+.fc-day-header {
+	background-color: #c00000;
+	color: white;
+}
+
+#movietable {
+    border: 3px solid black;
+    border-collapse: collapse;
+    width: 90%;
+}
+
+#movietable tr {
+    border: 3px solid black;
+}
+
+#page_mypage_mypage_eventstable_parent {
+	background-color: #7fa3cd;
+}
+
+#page_mypage_mypage_eventstable {
+	background-color: white;
+}
+
+#page_mypage_myhouse_eventstable {
+    background-color: white;
+    border: 2px solid black;
+}
+
+#page_mypage_myhouse_eventstable td {
+    padding: 15px;
+}
+
+#content {
+	margin: 9%;
+	width: 70%;
+}
+
+#loading-overlay {
+    background-color: gray;
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    z-index: 10000;
+    text-align: center;
+}
+
+#motd {
+	background-color: yellow;
+	border-radius: 20px;
+	font-weight: bold;
+	font-size: 16pt;
+	padding: 10px;
+	width: 12em;
+}
+
+#residence-calendar-add-entry-to-personal-button {
+    width: 100%;
+}
+
+#walkingman {
+	line-height: 6.4em;
+}
+
+#walkingman-img {
+	float: left;
+}
+
+#walkingman-points {
+	font-weight: bold;
+	font-size: 24pt;
+}
+
+.backbutton, .menubutton {
+    background : #f6f6f6;
+    color      : black;
+    font-weight: bold;
+    line-height: 52px;
+    font-size: 22pt;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 10px;
+    margin-top: 14px;
+    margin-bottom: 14px;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding: 20px;
+    border: 1px solid gray;
+}
+
+.selected-button {
+    background : #ed7c12 !important;
+    border: 1px solid white;
+}
+
+.content-button {
+    color: black;
+    background : #C1D4E3;
+    border-radius: .3125em;
+    line-height: 60px;
+    padding: 19.6px;
+    margin: 14px;
+    margin-left: 0px;
+    margin-right: 0px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+/* should be used for <button> buttons */
+.ui-page .content-real-button {
+    color: black;
+    background : #C1D4E3;
+    height: 48px;
+    font-size: 21pt;
+    line-height: 0px;
+    width: inherit;
+}
+
+.content-real-button {
+    color: black;
+    background : #C1D4E3;
+    height: 48px;
+    font-size: 21pt;
+    line-height: 0px;
+    width: 100%;
+}
+
+#note-entry-create-button {
+    color: black;
+    background : #C1D4E3;
+    height: 48px;
+    font-size: 21pt;
+    line-height: 0px;
+    width: inherit;
+}
+
+.shadow {
+   -moz-box-shadow:    inset 0 0 10px #000000;
+   -webkit-box-shadow: inset 0 0 10px #000000;
+   box-shadow:         inset 0 0 10px #000000;
+}
+
+#calendar-entry-dialog-outer {
+    border: 0px solid black; 
+    position: fixed; 
+    left: 70px; 
+    top: 70px; 
+    right: 70px; 
+    bottom: 70px; 
+    z-index: 900; 
+    display: none;
+}
+
+#calendar-entry-dialog-close-button {
+    width: 50px; 
+    position: absolute; 
+    right: 14px; 
+    top: 14px; 
+    z-index: 1500
+}
+
+.fc-event-time {
+    display: none !important;
+}
+
+.fc-event-title {
+    min-font-size: 12pt !important;
+}
+
+.fc-header-right {
+    width: 50%;
+}
+
+.fc-header-center {
+    width: 1px;
+}
+
+.fc-header-left {
+    width: 50%;
+}
+
+.calendar-button {
+    display: table-cell; 
+    width: 100px; 
+    height: 30px !important;
+}
+
+.house-offer-event,
+.house-offer-event div,
+.house-offer-event span {
+    background-color: #C1FFC1;
+    border-color: #C1FFC1;
+}
+
+.note-content {
+    margin-left: 0;
+    margin-right: 0.5em;
+    width: 95%;
+    font-size: 17pt;
+}
+
+input.note-content {
+    width: 50%;
+    margin-bottom: 0.2em;
+}
+
+textarea.note-content {
+    height: 90%;
+    min-height: 135px;
+    font-size: 19pt;
+}

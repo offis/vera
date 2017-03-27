@@ -1,0 +1,533 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="icon" href="../img/bhslogo.png">
+
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+
+        <script src="../js/jquery-2.1.0.min.js"></script>
+        <script src="../js/jquery-ui.min.js"></script>
+        <script src="../js/jquery-ui-sliderAccess.js"></script>
+        <script src="../js/jquery-ui-timepicker-addon.js"></script>
+        <script src="../js/jquery.couch.js"></script>
+        <script src="../js/wysiwyg.js"></script>
+        <script src="../js/purl.js"></script>
+        <script src="../js/moment-with-locales.min.js"></script>
+        <style>
+        body {
+            font-size: 16pt;
+            font-family: Verdana, Arial, Helvetica;
+            margin-top: 50px;
+        }
+        .event-table {
+        	position: absolute;
+        	bottom: 0;
+        	background-color: white;
+        	font-size: 16pt;
+        	width: 1000px;
+        }
+        .event-table-head {
+        	background-color: #4f81bd;
+        	color: white;
+        	font-weight: bold;
+        }
+        .event-table-row {
+        	background-color: #d0d8e8;
+        }
+        .event-table-cell {
+        	border: 1px solid white;
+        }
+        #image_placeholder {
+            border: 1px solid black;
+            width: 500px;
+            height: 375px;
+        }
+        #edit-title {
+            font-size: 50pt;
+            border: 1px dotted gray;
+        }
+        .description {
+            border: 1px dotted gray;
+            font-size: 20pt;
+            overflow: hidden;
+        }
+        #tablet {
+            position: absolute;
+            border: 5px solid black;
+            margin: 0.9em;
+            overflow: hidden;
+            width: 1200px;
+            height: 800px !important;
+        }
+        #notification {
+            font-color: orange;
+        }
+        </style>
+    </head>
+    <body>
+
+    <p>
+        <button onClick="saveDoc()">Speichern</button>
+        <button onClick="openEventEditor()">Termin hinzufügen</button>
+        <span id="notification"></span>
+        <p>
+            <input type="checkbox" id="published" /> Veröffentlicht?
+        </p>
+    </p>
+
+    <div id="tablet">
+        <div id="edit-title">
+            <span>Titel des Angebots</span>
+        </div>
+        <table>
+            <tr>
+            <td style="width: 500px; height: 375px; vertical-align: top">
+                <div id="edit-desc-1" class="description">
+                <span>Hier kann eine Beschreibung stehen
+                </span>
+                </div>
+            </td>
+            <td style="width: 500px; height: 375px; vertical-align: top">
+            <div id="image_placeholder">
+                <input type="file" accept="image/*" onchange="previewFile()" />
+            </div>
+            </td>
+            </tr>
+        </table>
+        <div id="edit-desc-2" class="description">
+        <span>
+        Hier kann auch noch eine Beschreibung stehen
+        </span>
+        </div>
+
+        <table class="event-table">
+        	<thead class="event-table-head">
+        		<tr>
+        			<td>Wann?</td>
+        			<td>Wo?</td>
+        			<td>Ansprechpartner</td>
+        		</tr>
+        	</thead>
+        	<tbody id="event-table-body">
+        	</tbody>
+        </table>
+    </div>
+
+            <div id="calendar-entry-dialog" title="Kalendereintrag anlegen oder bearbeiten">
+            <form id="calendar-entry-form">
+                <input type="hidden" id="calendar-entry-id" name="_id" value="" />
+                <input type="hidden" id="calendar-entry-rev" name="_rev" value="" />
+                <fieldset>
+                    <table style="border: 0px">
+                        <tr>
+                            <td><label for="location">Ort/Raum:</label></td>
+                            <td><input type="text" name="location" id="calendar-entry-location" value="" class="text ui-widget-content ui-corner-all" placeholder="Ort"/></td>
+                        </tr>
+                        <tr>
+                            <td><label for="start">Beginn:</label></td>
+                            <td>
+                                <input type="datetime" name="start" id="calendar-entry-start" value="" class="text ui-widget-content ui-corner-all" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="end">Ende:</label></td>
+                            <td>
+                                <input type="datetime" name="end" id="calendar-entry-end" value="" class="text ui-widget-content ui-corner-all" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="recurring">Wiederholen:</label></td>
+                            <td>
+                                <select name="recurring" id="calendar-entry-recurring">
+                                    <option value="0">Nicht</option>
+                                    <option value="1">Täglich</option>
+                                    <option value="7">Wöchentlich</option>
+                                    <option value="14">Alle 2 Wochen</option>
+                                    <option value="21">Alle 3 Wochen</option>
+                                    <option value="28">Alle 4 Wochen</option>
+                                    <option value="1M">Monatlich</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="editor">VerfasserIn:</label></td>
+                            <td>
+                                <input type="text" name="editor" id="calendar-entry-editor" value="" class="text ui-widget-content ui-corner-all" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="contact">AnsprechpartnerIn/DozentIn:</label></td>
+                            <td>
+                                <input type="text" name="contact" id="calendar-entry-contact" value="" class="text ui-widget-content ui-corner-all" />
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </form>
+        </div>
+
+    <script type="text/javascript">
+        var title = new wysiwyg("edit-title");
+        var desc1 = new wysiwyg("edit-desc-1");
+        var desc2 = new wysiwyg("edit-desc-2");
+
+        $(".description").css("border", "1px dotted gray");
+        $("#edit-title").css("border", "1px dotted gray");
+
+        var url = $.url();
+        var id  = url.param("id");
+        var rid = url.param("rid");
+        var db = "vera_residence_" + rid;
+        var rev = undefined;
+        var events = {};
+
+        function loadDoc() {
+            $.couch.db(db).openDoc(id, {
+                success: function(doc) {
+                    rev = doc._rev;
+
+                    if (doc.title.indexOf("<span>") === 0) {
+                        $("#edit-title").html($(doc.title));
+                    } else {
+                        $("#edit-title").html($("<span>" + doc.title + "</span>"));
+                    }
+
+                    if(doc["desc-1"] !== undefined) {
+                        $("#edit-desc-1").html($(doc["desc-1"]));
+                    }
+
+                    if(doc["desc-2"] !== undefined) {
+                        $("#edit-desc-2").html($(doc["desc-2"]));
+                    }
+
+                    if(doc["img-0"] !== undefined) {
+                        var preview = document.getElementById('image_placeholder');
+                        preview.style.background =  doc["img-0"];
+                        $("#image_placeholder").css("background-size", "500px 375px");
+                    }
+
+                    if (doc["is-published"] !== undefined && (doc["is-published"] === "on" || doc["is-published"] == true)) {
+                        $("#published").prop("checked", true);
+                    }
+                },
+                error: function(err) {
+                    alert("Beim Laden ist ein Fehler aufgetreten: " + err);
+                }
+            });
+        }
+
+        function saveDoc() {
+            var doc = {
+                "_id" : id,
+                "_rev" : rev,
+                "title" : title.html(),
+                "desc-1" : desc1.html(),
+                "desc-2" : desc2.html(),
+                "img-0" : $("#image_placeholder").css("background-image"),
+                "is-published" : $("#published").prop("checked")
+            }
+
+            $.couch.db(db).saveDoc(doc, {
+                success: function(doc) {
+                    rev = doc.rev;
+                    $("#notification").text("Gespeichert!");
+                },
+                error: function(err) {
+                    alert("Beim Speichern ist ein Fehler aufgetreten: " + err);
+                    $("#notification").text("");
+                }
+            });
+        }
+
+        function previewFile() {
+          var preview = document.getElementById('image_placeholder');
+          var file    = document.querySelector('input[type=file]').files[0];
+          var reader  = new FileReader();
+
+          reader.onloadend = function () {
+            preview.style.background = "url('" + reader.result + "')";
+          }
+
+          if (file) {
+            reader.readAsDataURL(file);
+          } else {
+            preview.style.background = "";
+          }
+        }
+
+        function initEventDialog() {
+        	$("#calendar-entry-dialog").dialog({
+	            autoOpen: false,
+	            show: {
+	                effect: "blind",
+	                duration: 500
+	            },
+	            hide: {
+	                effect: "explode",
+	                duration: 500
+	            },
+	            width: 600,
+	            height: 500,
+	            buttons: {
+	                "Termin anlegen/aktualisieren": function () {
+	                    addOrEditCalendarEntry();
+	                    $(this).dialog("close");
+	                },
+	                "Termin löschen": function () {
+	                    removeCalendarEntry();
+	                    $(this).dialog("close");
+	                },
+	                "Abbrechen": function () {
+	                    $(this).dialog("close");
+	                }
+	            }
+	        });
+
+	        $("#calendar-entry-start").datetimepicker();
+	        $("#calendar-entry-end").datetimepicker();
+        }
+
+        function openEventEditor(id) {
+            if (id === undefined) {
+                $("#calendar-entry-location").val("");
+                $("#calendar-entry-start").val("");
+                $("#calendar-entry-end").val("");
+                $("#calendar-entry-recurring").val("");
+                $("#calendar-entry-editor").val("");
+                $("#calendar-entry-contact").val("");
+                $("#calendar-entry-rev").val("");
+                $("#calendar-entry-id").val("");
+            } else {
+                var event = events[id];
+
+                $("#calendar-entry-location").val(event.location);
+                $("#calendar-entry-start").val(moment(event.start).format("DD.MM.YYYY HH:mm"));
+                $("#calendar-entry-end").val(moment(event.end).format("DD.MM.YYYY HH:mm"));
+                $("#calendar-entry-recurring").val(event.recurrence);
+                $("#calendar-entry-editor").val(event.editor);
+                $("#calendar-entry-contact").val(event.contact);
+                $("#calendar-entry-rev").val(event._rev);
+                $("#calendar-entry-id").val(event._id);
+            }
+            $("#calendar-entry-dialog").dialog("open");
+        }
+
+        function addOrEditCalendarEntry() {
+        	var event = {
+        		"title" : $("#edit-title").text(),
+        		"location" : $("#calendar-entry-location").val(),
+        		"start" : dateTimeLocaleToISO8601($("#calendar-entry-start").val()),
+        		"end" : dateTimeLocaleToISO8601($("#calendar-entry-end").val()),
+        		"recurrence" : $("#calendar-entry-recurring").val(),
+        		"editor" : $("#calendar-entry-editor").val(),
+        		"contact" : $("#calendar-entry-contact").val(),
+        		"className" : "house-offer-event",
+        		"house-offer-id" : id
+        	};
+
+        	var rev = $("#calendar-entry-rev").val();
+        	var eid = $("#calendar-entry-id").val();
+        	if (rev !== undefined && rev !== "") {
+        		event._rev = rev;
+        	}
+        	if (eid !== undefined && eid !== "") {
+        		event._id = eid;
+        	} else {
+        		event._id = "de.bremer-heimstiftung.vera.event.fullcalendar:" + new Date().getTime();
+        	}
+
+        	$.couch.db(db).saveDoc(event, {
+        		success: function (data) {
+        			$("#notification").text("Termin gespeichert!");
+        			events[event._id] = event;
+                    loadEvents();
+        		},
+        		error: function (err) {
+        			$("#notification").text("Fehler " + err);
+        		}
+        	});
+        }
+
+        function removeCalendarEntry() {
+            var id = $("#calendar-entry-id").val();
+            var rev = $("#calendar-entry-rev").val();
+
+            $.couch.db(db).removeDoc({"_id":id,"_rev":rev}, {
+                success: function() {
+                    $("#notification").text("Termin gelöscht!");
+                    loadEvents();
+                },
+                error: function(err) {
+                    alert("Fehler beim Löschen des Termins: " + err);
+                }
+            })
+        }
+
+        function localizeDatepicker() {
+        	jQuery(function ($) {
+	            $.datepicker.regional['de'] = {
+	                clearText: 'löschen',
+	                clearStatus: 'aktuelles Datum löschen',
+	                closeText: 'schließen',
+	                closeStatus: 'ohne Änderungen schließen',
+	                prevText: '<zurück',
+	                prevStatus: 'letzten Monat zeigen',
+	                nextText: 'Vor>',
+	                nextStatus: 'nächsten Monat zeigen',
+	                currentText: 'heute',
+	                currentStatus: '',
+	                monthNames: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+	                    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+	                ],
+	                monthNamesShort: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+	                    'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
+	                ],
+	                monthStatus: 'anderen Monat anzeigen',
+	                yearStatus: 'anderes Jahr anzeigen',
+	                weekHeader: 'Wo',
+	                weekStatus: 'Woche des Monats',
+	                dayNames: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+	                dayNamesShort: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+	                dayNamesMin: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+	                dayStatus: 'Setze DD als ersten Wochentag',
+	                dateStatus: 'Wähle D, M d',
+	                dateFormat: 'dd.mm.yy',
+	                firstDay: 1,
+	                initStatus: 'Wähle ein Datum',
+	                isRTL: false
+	            };
+	            $.datepicker.setDefaults($.datepicker.regional['de']);
+	        });
+
+	        $.timepicker.regional['de'] = {
+	            timeOnlyTitle: 'Zeit wählen',
+	            timeText: 'Zeit',
+	            hourText: 'Stunde',
+	            minuteText: 'Minute',
+	            secondText: 'Sekunde',
+	            millisecText: 'Millisekunde',
+	            microsecText: 'Mikrosekunde',
+	            timezoneText: 'Zeitzone',
+	            currentText: 'Jetzt',
+	            closeText: 'Fertig',
+	            timeFormat: 'HH:mm',
+	            amNames: ['vorm.', 'AM', 'A'],
+	            pmNames: ['nachm.', 'PM', 'P'],
+	            isRTL: false,
+	            hourMin: 7,
+	            hourMax: 22
+	        };
+	        $.timepicker.setDefaults($.timepicker.regional['de']);
+        }
+
+        function dateTimeLocaleToISO8601 (dateTime) {
+        	if (dateTime === undefined || dateTime === "") {
+        		return "";
+        	}
+	        // Convert local de datetime to ISO8601
+            // TODO: Replace with something like moment($("#news-entry-date").val(), "DD.MM.YYYY HH:mm").toISOString()
+	        var date = $.datepicker.parseDateTime("dd.mm.yy", "HH:mm", dateTime);
+	        return date.toISOString();
+	    }
+
+        function formatTime(date) {
+            return moment(date).format("HH:mm");
+        }
+
+        function formatTimeStr(date0, date1) {
+            return " von " + formatTime(date0) + " bis " + formatTime(date1) + " Uhr";
+        }
+
+        function dayOfMonth(date) {
+            var mom = moment(date);
+            var first = mom.date() % 7;
+            var occ = 1;
+            while (first != mom.date()) {
+                occ++;
+                first += 7;
+            }
+            if (occ > 3) {
+                return "letzten";
+            }
+            return occ + ".";
+        }
+
+        function eventToString(event) {
+            var days7 = ["Sonntags", "Montags", "Dienstags", "Mittwochs", "Donnerstags", "Freitags", "Samstags"];
+            var days  = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+            var date0 = new Date(event.start);
+            var date1 = new Date(event.end);
+            var str;
+
+            moment.locale("de");
+
+            switch(event.recurrence) {
+                case "1": {
+                    str = "Täglich" + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "7": {
+                    str = days7[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "14" : {
+                    str = "14-täglich am " + days[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "21" : {
+                    str = "Jeden 3. " + days[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "28" : {
+                    str = "Jeden 4. " + days[date0.getDay()] + formatTimeStr(date0, date1);
+                    break;
+                }
+                case "1M" : {
+                    str = "Monatlich am " + dayOfMonth(date0) + " " + days[date0.getDay()] + " im Monat " + formatTimeStr(date0, date1);
+                    break;
+                }
+                default: {
+                    str = "Am " + date0.getDate() + "." + date0.getMonth() + "." + (1900 + date0.getYear()) + formatTimeStr(date0, date1);
+                }
+            }
+
+            return str;
+        }
+
+	    function insertEvent(event) {
+	    	var tr = $("<tr class='event-table-row'></td>");
+	    	$("#event-table-body").append(tr);
+	    	tr.append($("<td style='cursor: pointer' class='event-table-cell' onclick='openEventEditor(\"" + event._id + "\")'>" + eventToString(event) + "</td>"));
+	    	tr.append($("<td class='event-table-cell'>" + event.location+ "</td>"));
+	    	tr.append($("<td class='event-table-cell'>" + event.contact + "</td>"));
+	    	tr.append($("<td class='event-table-cell'></td>"));
+	    }
+
+	    function loadEvents() {
+	    	$("#event-table-body").empty();
+
+	    	$.couch.db(db).view("access/calendar-by-houseoffer", {
+                key: id,
+	    		success: function (data) {
+	    			var n;
+	    			for(n = 0; n < data.rows.length; n++) {
+                        var event = data.rows[n].value;
+	    				insertEvent(event);
+                        events[event._id] = event; 
+	    			}
+	    		},
+	    		error: function (err) {
+	    			$("#notification").text("Fehler beim Laden der Termine! " + err);
+	    		}
+	    	})
+	    }
+
+        localizeDatepicker();
+        initEventDialog();
+        loadDoc();
+        loadEvents();
+    </script>
+    </body>
+</html>
